@@ -15,7 +15,7 @@ public class Jdk8Deserializers implements Deserializers {
 			BeanDescription beanDesc) {
 		MemoryDeserializer<?> result = null;
 		if (refType.getRawClass() == Optional.class) {
-			result = new OptionalDeserializer();
+			result = new OptionalDeserializer(refType, null);
 		}
 		return result;
 	}

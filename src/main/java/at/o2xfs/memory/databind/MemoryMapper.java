@@ -20,6 +20,7 @@ import at.o2xfs.memory.databind.ser.SerializerFactory;
 import at.o2xfs.memory.databind.ser.Serializers;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.TypeFactory;
+import at.o2xfs.memory.datatype.jdk8.Jdk8Serializers;
 
 public class MemoryMapper {
 
@@ -43,7 +44,7 @@ public class MemoryMapper {
 		deserializationContext = new DefaultDeserializationContext.Impl(BeanDeserializerFactory.INSTANCE);
 		serializationConfig = new SerializationConfig(typeFactory, classIntrospector, DEFAULT_ANNOTATION_INTROSPECTOR);
 		serializerProvider = new DefaultSerializerProvider.Impl();
-		serializerFactory = BeanSerializerFactory.instance;
+		serializerFactory = BeanSerializerFactory.instance.withAdditionalSerializers(new Jdk8Serializers());
 	}
 
 	private DeserializationContext createDeserializationContext(DeserializationConfig cfg) {

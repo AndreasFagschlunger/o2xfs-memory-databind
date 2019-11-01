@@ -16,12 +16,14 @@ import at.o2xfs.memory.databind.introspect.AnnotatedMember;
 import at.o2xfs.memory.databind.introspect.AnnotatedMethod;
 import at.o2xfs.memory.databind.introspect.BeanPropertyDefinition;
 import at.o2xfs.memory.databind.type.JavaType;
+import at.o2xfs.memory.datatype.jdk8.Jdk8Deserializers;
 
 public class BeanDeserializerFactory extends BasicDeserializerFactory {
 
 	private static final String DEFAULT_BUILD_METHOD = "build";
 
-	public static final BeanDeserializerFactory INSTANCE = new BeanDeserializerFactory(new DeserializerFactoryConfig());
+	public static final BeanDeserializerFactory INSTANCE = new BeanDeserializerFactory(
+			new DeserializerFactoryConfig().withAdditionalDeserializers(new Jdk8Deserializers()));
 
 	public BeanDeserializerFactory(DeserializerFactoryConfig factoryConfig) {
 		super(factoryConfig);

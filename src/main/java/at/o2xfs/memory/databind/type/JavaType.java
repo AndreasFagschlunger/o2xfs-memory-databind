@@ -24,6 +24,8 @@ public abstract class JavaType {
 
 	public abstract JavaType containedType(int index);
 
+	public abstract int containedTypeCount();
+
 	public JavaType containedTypeOrUnknown(int index) {
 		JavaType t = containedType(index);
 		return (t == null) ? TypeFactory.unknownType() : t;
@@ -58,6 +60,10 @@ public abstract class JavaType {
 	}
 
 	public abstract JavaType getSuperClass();
+
+	public boolean hasGenericTypes() {
+		return containedTypeCount() > 0;
+	}
 
 	public boolean isCollectionLikeType() {
 		return false;

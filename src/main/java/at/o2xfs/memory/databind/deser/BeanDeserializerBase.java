@@ -45,7 +45,7 @@ public abstract class BeanDeserializerBase extends StdDeserializer<Object> imple
 		}
 		for (SettableBeanProperty origProp : beanProperties) {
 			SettableBeanProperty prop = origProp;
-			MemoryDeserializer<?> deser = prop.valueDeserializer;
+			MemoryDeserializer<?> deser = prop.getValueDeserializer();
 			deser = ctxt.handlePrimaryContextualization(deser, prop, prop.getType());
 			prop = prop.withValueDeserializer(deser);
 			if (prop != origProp) {

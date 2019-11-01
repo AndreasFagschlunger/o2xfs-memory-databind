@@ -35,6 +35,24 @@ public abstract class TypeBase extends JavaType {
 	}
 
 	@Override
+	public int containedTypeCount() {
+		return bindings.size();
+	}
+
+	@Override
+	public abstract StringBuilder getGenericSignature(StringBuilder sb);
+
+	@Override
+	public boolean isContainerType() {
+		return false;
+	}
+
+	@Override
+	public JavaType refine(Class<?> rawType, TypeBindings bindings, JavaType superClass, JavaType[] superInterfaces) {
+		return null;
+	}
+
+	@Override
 	public JavaType findSuperType(Class<?> rawTarget) {
 		if (rawClass == rawTarget) {
 			return this;
