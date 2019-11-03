@@ -33,8 +33,10 @@ public abstract class BeanSerializerBase extends MemorySerializer<Object> implem
 				continue;
 			}
 			JavaType type = prop.getType();
-			if (type.isContainerType()) {
-				prop.setNonTrivialBaseType(type);
+			if (!type.isFinal()) {
+				if (type.isContainerType() || type.hasGenericTypes()) {
+					prop.setNonTrivialBaseType(type);
+				}
 				continue;
 			}
 			MemorySerializer<Object> ser = provider.findValueSerializer(type, prop);

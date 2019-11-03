@@ -47,6 +47,8 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 		if (nonTrivialBaseType != null) {
 			JavaType t = prov.constructSpecializedType(nonTrivialBaseType, type);
 			result = prov.findPrimaryPropertySerializer(t, this);
+		} else {
+			result = prov.findPrimaryPropertySerializer(type, this);
 		}
 		return result;
 	}
@@ -106,4 +108,27 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 		this.nonTrivialBaseType = nonTrivialBaseType;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(40);
+		sb.append("property '").append(getName()).append("' (");
+		if (accessorMethod != null) {
+			sb
+					.append("via method ")
+					.append(accessorMethod.getDeclaringClass().getName())
+					.append("#")
+					.append(accessorMethod.getName());
+		} else if (field != null) {
+			sb.append("field \"").append(field.getDeclaringClass().getName()).append("#").append(field.getName());
+		} else {
+			sb.append("virtual");
+		}
+		if (serializer == null) {
+			sb.append(", no static serializer");
+		} else {
+			sb.append(", static serializer of type " + serializer.getClass().getName());
+		}
+		sb.append(')');
+		return sb.toString();
+	}
 }

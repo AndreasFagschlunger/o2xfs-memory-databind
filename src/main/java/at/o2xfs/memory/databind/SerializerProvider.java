@@ -63,6 +63,11 @@ public abstract class SerializerProvider {
 		return (MemorySerializer<Object>) handlePrimaryContextualization(result, property);
 	}
 
+	public MemorySerializer<Object> findPrimaryPropertySerializer(Class<?> valueType, BeanProperty property) {
+		MemorySerializer<Object> result = createAndCacheUntypedSerializer(valueType);
+		return result;
+	}
+
 	public MemorySerializer<Object> findValueSerializer(Class<?> valueType, BeanProperty property) {
 		MemorySerializer<Object> result = createAndCacheUntypedSerializer(valueType);
 		return result;

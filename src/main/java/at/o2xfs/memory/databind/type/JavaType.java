@@ -5,6 +5,8 @@
  */
 package at.o2xfs.memory.databind.type;
 
+import java.lang.reflect.Modifier;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public abstract class JavaType {
@@ -67,6 +69,10 @@ public abstract class JavaType {
 
 	public boolean isCollectionLikeType() {
 		return false;
+	}
+
+	public final boolean isFinal() {
+		return Modifier.isFinal(rawClass.getModifiers());
 	}
 
 	public boolean isMapLikeType() {

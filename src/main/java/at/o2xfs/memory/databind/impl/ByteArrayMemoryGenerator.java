@@ -29,9 +29,11 @@ public class ByteArrayMemoryGenerator implements MemoryGenerator {
 
 	@Override
 	public void close() {
-		memory = memorySystem.allocate(buffer.toByteArray());
-		if (parent.isPresent()) {
-			parent.get().write(memory.getAddress().getValue());
+		if (memory == null) {
+			memory = memorySystem.allocate(buffer.toByteArray());
+			if (parent.isPresent()) {
+				parent.get().write(memory.getAddress().getValue());
+			}
 		}
 	}
 
