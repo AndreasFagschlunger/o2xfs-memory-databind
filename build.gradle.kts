@@ -33,6 +33,8 @@ plugins {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 group = "at.o2xfs"
@@ -61,23 +63,10 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.register<Jar>("sourcesJar") {
-    archiveClassifier.set("sources")
-    from(sourceSets.main.get().allJava)
-}
-
-tasks.register<Jar>("javadocJar") {
-    archiveClassifier.set("javadoc")
-    from(tasks.javadoc.get().destinationDir)
-}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-
-            artifact(tasks["sourcesJar"])
-            artifact(tasks["javadocJar"])
         }
     }
 
