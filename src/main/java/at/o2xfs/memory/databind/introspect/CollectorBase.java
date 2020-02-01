@@ -6,17 +6,19 @@
 package at.o2xfs.memory.databind.introspect;
 
 import java.lang.annotation.Annotation;
-import java.util.Objects;
 
 import at.o2xfs.memory.databind.AnnotationIntrospector;
+import at.o2xfs.memory.databind.cfg.MapperConfig;
 import at.o2xfs.memory.databind.util.ClassUtil;
 
 class CollectorBase {
 
+	protected final MapperConfig<?> config;
 	protected final AnnotationIntrospector intr;
 
-	public CollectorBase(AnnotationIntrospector intr) {
-		this.intr = Objects.requireNonNull(intr);
+	public CollectorBase(MapperConfig<?> config) {
+		this.config = config;
+		intr = config == null ? null : config.getAnnotationIntrospector();
 	}
 
 	protected final AnnotationCollector collectAnnotations(Annotation[] annotations) {

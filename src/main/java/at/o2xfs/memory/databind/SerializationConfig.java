@@ -5,23 +5,14 @@
  */
 package at.o2xfs.memory.databind;
 
-import at.o2xfs.memory.databind.cfg.MapperConfig;
+import at.o2xfs.memory.databind.cfg.MapperBuilder;
+import at.o2xfs.memory.databind.cfg.MapperConfigBase;
 import at.o2xfs.memory.databind.introspect.ClassIntrospector;
-import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.TypeFactory;
 
-public class SerializationConfig extends MapperConfig {
+public class SerializationConfig extends MapperConfigBase<SerializationConfig> {
 
-	public SerializationConfig(TypeFactory typeFactory, ClassIntrospector classIntrospector,
-			AnnotationIntrospector annotationIntrospector) {
-		super(typeFactory, classIntrospector, annotationIntrospector);
-	}
-
-	public JavaType constructSpecializedType(JavaType baseType, Class<?> subclass) {
-		return getTypeFactory().constructSpecializedType(baseType, subclass);
-	}
-
-	public BeanDescription introspect(JavaType type) {
-		return getClassIntrospector().forSerialization(this, type);
+	public SerializationConfig(MapperBuilder b, TypeFactory typeFactory, ClassIntrospector classIntrospector) {
+		super(b, typeFactory, classIntrospector);
 	}
 }

@@ -5,18 +5,19 @@
  */
 package at.o2xfs.memory.databind.ser;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.RandomAccess;
 
+import at.o2xfs.memory.databind.BeanDescription;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializationConfig;
 import at.o2xfs.memory.databind.SerializerProvider;
 import at.o2xfs.memory.databind.cfg.SerializerFactoryConfig;
 import at.o2xfs.memory.databind.introspect.Annotated;
+import at.o2xfs.memory.databind.jsontype.TypeSerializer;
 import at.o2xfs.memory.databind.ser.std.BooleanSerializer;
 import at.o2xfs.memory.databind.ser.std.EnumSerializer;
 import at.o2xfs.memory.databind.ser.std.EnumSetSerializer;
@@ -26,6 +27,7 @@ import at.o2xfs.memory.databind.ser.std.NumberSerializers;
 import at.o2xfs.memory.databind.ser.std.StringSerializer;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
+import at.o2xfs.memory.databind.type.ReferenceType;
 
 public abstract class BasicSerializerFactory extends SerializerFactory {
 
@@ -53,21 +55,23 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 			result = new EnumSetSerializer();
 		} else {
 			if (isIndexedList(raw)) {
-				result = new IndexedListSerializer(type.getContentType());
+				result = new IndexedListSerializer(type.getContentType(), null);
 			}
 		}
 		return result;
 	}
 
-	protected MemorySerializer<?> buildContainerSerializer(JavaType type) {
+	protected MemorySerializer<?> buildContainerSerializer(SerializerProvider prov, JavaType type,
+			BeanDescription beanDesc) {
 		MemorySerializer<?> result = null;
+		JavaType elementType = type.getContentType();
 		Class<?> raw = type.getRawClass();
 		if (type.isMapLikeType()) {
 			if (Map.class.isAssignableFrom(raw)) {
 				return buildMapSerializer(type);
 			}
 		}
-		if (Collection.class.isAssignableFrom(raw)) {
+		if (type.isCollectionLikeType()) {
 			result = buildCollectionSerializer((CollectionType) type);
 		}
 		return result;
@@ -91,12 +95,6 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 		return concrete.get(clsName);
 	}
 
-	@Override
-	public MemorySerializer<Object> createTypeSerializer(SerializationConfig config, JavaType baseType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public abstract Iterable<Serializers> customSerializers();
 
 	protected MemorySerializer<?> findSerializerByPrimaryType(JavaType type) {
@@ -116,6 +114,22 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 		Object serDef = prov.getAnnotationIntrospector().findSerializer(a);
 		if (serDef != null) {
 			result = (MemorySerializer<Object>) prov.serializerInstance(a, serDef);
+		}
+		return result;
+	}
+
+	public MemorySerializer<?> findReferenceSerializer(SerializerProvider ctxt, ReferenceType refType,
+			BeanDescription beanDesc) {
+		MemorySerializer<?> result = null;
+		JavaType contentType = refType.getContentType();
+		TypeSerializer contentTypeSerializer = contentType.getTypeHandler();
+		SerializationConfig config = ctxt.getConfig();
+		if (contentTypeSerializer == null) {
+			contentTypeSerializer = ctxt.findTypeSerializer(contentType);
+		}
+		for (Serializers serializers : customSerializers()) {
+			MemorySerializer<?> serializer = serializers
+					.findReferenceSerializer(config, refType, beanDesc, contentTypeSerializer);
 		}
 		return result;
 	}

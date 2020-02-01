@@ -27,25 +27,27 @@ public class DeserializerCache {
 	private MemoryDeserializer<Object> createAndCacheValueDeserializer(DeserializationContext ctxt,
 			DeserializerFactory factory, JavaType type) {
 		MemoryDeserializer<Object> result = createAndCache(ctxt, factory, type);
-		if (result instanceof ResolvableDeserializer) {
-			((ResolvableDeserializer) result).resolve(ctxt);
-		}
 		return result;
 	}
 
 	private MemoryDeserializer<Object> createAndCache(DeserializationContext ctxt, DeserializerFactory factory,
 			JavaType type) {
-		MemoryDeserializer<Object> result = createDeserializer(ctxt, factory, type);
-		if (result instanceof ResolvableDeserializer) {
-			((ResolvableDeserializer) result).resolve(ctxt);
+		MemoryDeserializer<Object> deser = createDeserializer(ctxt, factory, type);
+		if (deser == null) {
+			return null;
 		}
-		return result;
+		boolean addToCache = deser.isCachable();
+		deser.resolve(ctxt);
+		if (addToCache) {
+			cachedDeserializers.put(type, deser);
+		}
+		return deser;
 	}
 
 	private MemoryDeserializer<Object> createDeserializer(DeserializationContext ctxt, DeserializerFactory factory,
 			JavaType type) {
 		DeserializationConfig config = ctxt.getConfig();
-		BeanDescription beanDesc = config.introspect(type);
+		BeanDescription beanDesc = ctxt.introspectBeanDescription(type);
 
 		MemoryDeserializer<Object> result = findDeserializerFromAnnotation(ctxt, beanDesc.getClassInfo());
 		if (result == null) {

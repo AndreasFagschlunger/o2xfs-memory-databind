@@ -9,22 +9,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import at.o2xfs.memory.databind.AnnotationIntrospector;
 import at.o2xfs.memory.databind.deser.Deserializers;
-import at.o2xfs.memory.databind.introspect.ClassIntrospector;
-import at.o2xfs.memory.databind.type.TypeFactory;
 
-public class DeserializerFactoryConfig extends MapperConfig {
+public class DeserializerFactoryConfig {
 
 	private final List<Deserializers> additionalDeserializers;
 
 	public DeserializerFactoryConfig() {
-		this(null, null, null, Collections.emptyList());
+		this(Collections.emptyList());
 	}
 
-	public DeserializerFactoryConfig(TypeFactory typeFactory, ClassIntrospector classIntrospector,
-			AnnotationIntrospector annotationIntrospector, List<Deserializers> additionalDeserializers) {
-		super(typeFactory, classIntrospector, annotationIntrospector);
+	protected DeserializerFactoryConfig(List<Deserializers> additionalDeserializers) {
 		this.additionalDeserializers = additionalDeserializers;
 	}
 
@@ -35,7 +30,7 @@ public class DeserializerFactoryConfig extends MapperConfig {
 	public DeserializerFactoryConfig withAdditionalDeserializers(Deserializers additional) {
 		List<Deserializers> newList = new ArrayList<>(additionalDeserializers);
 		newList.add(additional);
-		return new DeserializerFactoryConfig(typeFactory, classIntrospector, annotationIntrospector, newList);
+		return new DeserializerFactoryConfig(newList);
 	}
 
 }

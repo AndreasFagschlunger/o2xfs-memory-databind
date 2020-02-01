@@ -12,4 +12,16 @@ public abstract class MemoryDeserializer<T> {
 	}
 
 	public abstract T deserialize(ReadableMemory memory, DeserializationContext ctxt);
+
+	public boolean isCachable() {
+		return false;
+	}
+
+	public void resolve(DeserializationContext ctxt) {
+
+	}
+
+	public MemoryDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+		return this;
+	}
 }

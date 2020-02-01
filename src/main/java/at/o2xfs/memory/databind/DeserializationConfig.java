@@ -5,23 +5,14 @@
  */
 package at.o2xfs.memory.databind;
 
-import at.o2xfs.memory.databind.cfg.MapperConfig;
+import at.o2xfs.memory.databind.cfg.MapperBuilder;
+import at.o2xfs.memory.databind.cfg.MapperConfigBase;
 import at.o2xfs.memory.databind.introspect.ClassIntrospector;
-import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.TypeFactory;
 
-public class DeserializationConfig extends MapperConfig {
+public class DeserializationConfig extends MapperConfigBase<DeserializationConfig> {
 
-	public DeserializationConfig(TypeFactory typeFactory, ClassIntrospector classIntrospector,
-			AnnotationIntrospector annotationIntrospector) {
-		super(typeFactory, classIntrospector, annotationIntrospector);
-	}
-
-	public <T extends BeanDescription> T introspect(JavaType type) {
-		return (T) getClassIntrospector().forDeserialization(this, type);
-	}
-
-	public <T extends BeanDescription> T introspectForBuilder(JavaType type) {
-		return (T) getClassIntrospector().forDeserializationWithBuilder(this, type);
+	public DeserializationConfig(MapperBuilder b, TypeFactory typeFactory, ClassIntrospector classIntrospector) {
+		super(b, typeFactory, classIntrospector);
 	}
 }

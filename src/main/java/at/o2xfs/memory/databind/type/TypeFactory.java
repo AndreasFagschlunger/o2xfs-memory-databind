@@ -5,9 +5,11 @@
  */
 package at.o2xfs.memory.databind.type;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -17,14 +19,16 @@ import at.o2xfs.memory.datatype.jdk8.Jdk8TypeModifier;
 
 public final class TypeFactory {
 
-	private final static Class<?> CLS_ENUM = Enum.class;
+	private static final Class<?> CLS_COMPARABLE = Comparable.class;
+	private static final Class<?> CLS_ENUM = Enum.class;
 
 	private static final SimpleType BOOLEAN_TYPE = new SimpleType(Boolean.TYPE);
 	private static final SimpleType INT_TYPE = new SimpleType(Integer.TYPE);
 	private static final SimpleType LONG_TYPE = new SimpleType(Long.TYPE);
 	private static final SimpleType STRING_TYPE = new SimpleType(String.class);
 	private static final SimpleType OBJECT_TYPE = new SimpleType(Object.class);
-	private final static SimpleType CORE_TYPE_ENUM = new SimpleType(CLS_ENUM);
+	private static final SimpleType CORE_TYPE_COMPARABLE = new SimpleType(CLS_COMPARABLE);
+	private static final SimpleType CORE_TYPE_ENUM = new SimpleType(CLS_ENUM);
 
 	private static final TypeFactory instance = new TypeFactory();
 
@@ -55,6 +59,11 @@ public final class TypeFactory {
 		List<JavaType> typeParams = bindings.getTypeParameters();
 		JavaType elementType = typeParams.get(0);
 		return CollectionType.construct(rawType, bindings, superClass, superInterfaces, elementType);
+	}
+
+	private JavaType fromArrayType(GenericArrayType type, TypeBindings bindings) {
+		JavaType elementType = fromAny(type.getGenericComponentType(), bindings);
+		return ArrayType.construct(elementType, bindings);
 	}
 
 	public JavaType constructSpecializedType(JavaType baseType, Class<?> subclass) {
@@ -111,8 +120,12 @@ public final class TypeFactory {
 			result = fromClass((Class<?>) type, bindings);
 		} else if (type instanceof ParameterizedType) {
 			result = fromParamType((ParameterizedType) type, bindings);
+		} else if (type instanceof GenericArrayType) {
+			result = fromArrayType((GenericArrayType) type, bindings);
 		} else if (type instanceof TypeVariable) {
 			result = fromVariable((TypeVariable<?>) type, bindings);
+		} else if (type instanceof WildcardType) {
+			result = fromWildcard((WildcardType) type, bindings);
 		} else {
 			throw new IllegalArgumentException(type.toString());
 		}
@@ -126,6 +139,8 @@ public final class TypeFactory {
 		Class<?> rawType = (Class<?>) pType.getRawType();
 		if (rawType == CLS_ENUM) {
 			return CORE_TYPE_ENUM;
+		} else if (rawType == CLS_COMPARABLE) {
+			return CORE_TYPE_COMPARABLE;
 		}
 		TypeBindings newBindings;
 		Type[] args = pType.getActualTypeArguments();
@@ -148,6 +163,10 @@ public final class TypeFactory {
 			return type;
 		}
 		return fromAny(var.getBounds()[0], bindings);
+	}
+
+	private JavaType fromWildcard(WildcardType type, TypeBindings bindings) {
+		return fromAny(type.getUpperBounds()[0], bindings);
 	}
 
 	private JavaType fromClass(Class<?> rawType, TypeBindings bindings) {

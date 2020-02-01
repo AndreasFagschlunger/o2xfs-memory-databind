@@ -8,7 +8,7 @@ package at.o2xfs.memory.databind.ser;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import at.o2xfs.memory.databind.MemoryGenerator;
+import at.o2xfs.memory.core.MemoryGenerator;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializerProvider;
 import at.o2xfs.memory.databind.annotation.Pointer;
@@ -17,6 +17,8 @@ import at.o2xfs.memory.databind.introspect.AnnotatedMember;
 import at.o2xfs.memory.databind.introspect.AnnotatedMethod;
 import at.o2xfs.memory.databind.introspect.BeanPropertyDefinition;
 import at.o2xfs.memory.databind.introspect.ConcreteBeanPropertyBase;
+import at.o2xfs.memory.databind.jsontype.TypeSerializer;
+import at.o2xfs.memory.databind.ser.impl.PropertySerializerMap;
 import at.o2xfs.memory.databind.type.JavaType;
 
 public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
@@ -27,10 +29,12 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 	private Method accessorMethod;
 	private Field field;
 	private MemorySerializer<Object> serializer;
+	private TypeSerializer typeSerializer;
+	private PropertySerializerMap dynamicSerializers;
 	private JavaType nonTrivialBaseType;
 
 	public BeanPropertyWriter(BeanPropertyDefinition propDef, AnnotatedMember member, JavaType declaredType,
-			MemorySerializer<?> serializer) {
+			MemorySerializer<?> serializer, TypeSerializer typeSer) {
 		this.name = propDef.getName();
 		this.declaredType = declaredType;
 		this.member = member;
@@ -40,17 +44,23 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 			field = (Field) member.getMember();
 		}
 		this.serializer = (MemorySerializer<Object>) serializer;
+		typeSerializer = typeSer;
+		dynamicSerializers = (serializer == null) ? PropertySerializerMap.emptyForProperties() : null;
 	}
 
-	private MemorySerializer<Object> findAndAddDynamic(Class<?> type, SerializerProvider prov) {
-		MemorySerializer<Object> result = null;
+	private MemorySerializer<Object> findAndAddDynamic(PropertySerializerMap map, Class<?> rawType,
+			SerializerProvider provider) {
+		JavaType t;
 		if (nonTrivialBaseType != null) {
-			JavaType t = prov.constructSpecializedType(nonTrivialBaseType, type);
-			result = prov.findPrimaryPropertySerializer(t, this);
+			t = provider.constructSpecializedType(nonTrivialBaseType, rawType);
 		} else {
-			result = prov.findPrimaryPropertySerializer(type, this);
+			t = provider.constructType(rawType);
 		}
-		return result;
+		PropertySerializerMap.SerializerAndMapResult result = map.findAndAddPrimarySerializer(t, provider, this);
+		if (map != result.map) {
+			dynamicSerializers = result.map;
+		}
+		return result.serializer;
 	}
 
 	public boolean hasSerializer() {
@@ -61,23 +71,29 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 		serializer = ser;
 	}
 
-	public void serializeAsField(Object obj, MemoryGenerator gen, SerializerProvider prov) {
-		try {
-			Object value = accessorMethod != null ? accessorMethod.invoke(obj) : field.get(obj);
-			if (value != null && serializer == null) {
-				serializer = findAndAddDynamic(value.getClass(), prov);
+	public void serializeAsField(Object obj, MemoryGenerator gen, SerializerProvider prov) throws Exception {
+		Object value = accessorMethod != null ? accessorMethod.invoke(obj) : field.get(obj);
+		System.out.println("value=" + value + ",serializer=" + serializer);
+		MemorySerializer<Object> ser = serializer;
+		if (ser == null) {
+			Class<?> cls = value.getClass();
+			PropertySerializerMap m = dynamicSerializers;
+			ser = m.serializerFor(cls);
+			if (ser == null) {
+				ser = findAndAddDynamic(m, cls, prov);
 			}
-			if (serializer != null) {
-				if (member.getAnnotation(Pointer.class) != null) {
-					try (MemoryGenerator reference = gen.writePointer()) {
-						serializer.serialize(value, reference, prov);
-					}
-				} else {
-					serializer.serialize(value, gen, prov);
-				}
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		}
+		boolean reference = member.getAnnotation(Pointer.class) != null;
+		if (reference) {
+			gen.startPointer();
+		}
+		if (typeSerializer == null) {
+			ser.serialize(value, gen, prov);
+		} else {
+			ser.serializeWithType(value, gen, prov, typeSerializer);
+		}
+		if (reference) {
+			gen.endPointer();
 		}
 	}
 

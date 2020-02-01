@@ -10,32 +10,24 @@ import at.o2xfs.memory.databind.introspect.ClassIntrospector;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.TypeFactory;
 
-public class MapperConfig {
+public abstract class MapperConfig<T extends MapperConfig<T>> {
 
-	protected final TypeFactory typeFactory;
-	protected final ClassIntrospector classIntrospector;
-	protected final AnnotationIntrospector annotationIntrospector;
+	protected final BaseSettings base;
 
-	public MapperConfig(TypeFactory typeFactory, ClassIntrospector classIntrospector,
-			AnnotationIntrospector annotationIntrospector) {
-		this.typeFactory = typeFactory;
-		this.classIntrospector = classIntrospector;
-		this.annotationIntrospector = annotationIntrospector;
+	protected MapperConfig(BaseSettings base) {
+		this.base = base;
 	}
 
-	public final JavaType constructType(Class<?> cls) {
-		return getTypeFactory().constructType(cls);
-	}
+	public abstract ClassIntrospector classIntrospectorInstance();
+
+	public abstract JavaType constructType(Class<?> cls);
+
+	public abstract JavaType constructSpecializedType(JavaType baseType, Class<?> subclass);
 
 	public AnnotationIntrospector getAnnotationIntrospector() {
-		return annotationIntrospector;
+		return base.getAnnotationIntrospector();
 	}
 
-	public ClassIntrospector getClassIntrospector() {
-		return classIntrospector;
-	}
+	public abstract TypeFactory getTypeFactory();
 
-	public final TypeFactory getTypeFactory() {
-		return typeFactory;
-	}
 }

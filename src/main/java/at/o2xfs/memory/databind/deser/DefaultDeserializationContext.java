@@ -13,38 +13,9 @@ import at.o2xfs.memory.databind.util.ClassUtil;
 
 public abstract class DefaultDeserializationContext extends DeserializationContext {
 
-	public static final class Impl extends DefaultDeserializationContext {
-
-		public Impl(DeserializerFactory factory) {
-			super(factory, null);
-		}
-
-		public Impl(DeserializerFactory factory, DeserializationConfig config) {
-			super(factory, config);
-		}
-
-		private Impl(Impl src, DeserializationConfig cfg) {
-			super(src, cfg);
-		}
-
-		private Impl(Impl src, DeserializerFactory factory) {
-			super(src, factory);
-		}
-
-		@Override
-		public DeserializationContext createInstance(DeserializationConfig cfg) {
-			return new Impl(this, cfg);
-		}
-
-		@Override
-		public DefaultDeserializationContext with(DeserializerFactory factory) {
-			return new Impl(this, factory);
-		}
-
-	}
-
-	public DefaultDeserializationContext(DeserializerFactory factory, DeserializationConfig config) {
-		super(factory, config);
+	public DefaultDeserializationContext(DeserializerFactory factory, DeserializerCache cache,
+			DeserializationConfig config) {
+		super(factory, cache, config);
 	}
 
 	private DefaultDeserializationContext(DefaultDeserializationContext src, DeserializationConfig config) {
@@ -68,5 +39,31 @@ public abstract class DefaultDeserializationContext extends DeserializationConte
 	}
 
 	public abstract DefaultDeserializationContext with(DeserializerFactory factory);
+
+	public static final class Impl extends DefaultDeserializationContext {
+
+		public Impl(DeserializerFactory factory, DeserializerCache cache, DeserializationConfig config) {
+			super(factory, cache, config);
+		}
+
+		private Impl(Impl src, DeserializationConfig cfg) {
+			super(src, cfg);
+		}
+
+		private Impl(Impl src, DeserializerFactory factory) {
+			super(src, factory);
+		}
+
+		@Override
+		public DeserializationContext createInstance(DeserializationConfig cfg) {
+			return new Impl(this, cfg);
+		}
+
+		@Override
+		public DefaultDeserializationContext with(DeserializerFactory factory) {
+			return new Impl(this, factory);
+		}
+
+	}
 
 }

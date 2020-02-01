@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import at.o2xfs.memory.databind.AnnotationIntrospector;
+import at.o2xfs.memory.databind.cfg.MapperConfig;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.util.ClassUtil;
 
@@ -36,8 +36,8 @@ public class AnnotatedFieldCollector extends CollectorBase {
 		}
 	}
 
-	AnnotatedFieldCollector(AnnotationIntrospector intr) {
-		super(intr);
+	AnnotatedFieldCollector(MapperConfig<?> config) {
+		super(config);
 	}
 
 	private Map<String, FieldBuilder> findFields(TypeResolutionContext tc, JavaType type,
@@ -75,8 +75,7 @@ public class AnnotatedFieldCollector extends CollectorBase {
 		return result;
 	}
 
-	public static List<AnnotatedField> collectFields(AnnotationIntrospector intr, TypeResolutionContext tc,
-			JavaType type) {
-		return new AnnotatedFieldCollector(intr).collect(tc, type);
+	public static List<AnnotatedField> collectFields(MapperConfig<?> config, TypeResolutionContext tc, JavaType type) {
+		return new AnnotatedFieldCollector(config).collect(tc, type);
 	}
 }

@@ -67,6 +67,10 @@ public abstract class JavaType {
 		return containedTypeCount() > 0;
 	}
 
+	public boolean isArrayType() {
+		return false;
+	}
+
 	public boolean isCollectionLikeType() {
 		return false;
 	}

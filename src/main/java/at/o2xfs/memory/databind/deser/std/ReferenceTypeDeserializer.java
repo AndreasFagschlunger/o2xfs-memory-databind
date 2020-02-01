@@ -9,10 +9,9 @@ import at.o2xfs.memory.databind.BeanProperty;
 import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
 import at.o2xfs.memory.databind.ReadableMemory;
-import at.o2xfs.memory.databind.deser.ContextualDeserializer;
 import at.o2xfs.memory.databind.type.JavaType;
 
-public abstract class ReferenceTypeDeserializer<T> extends StdDeserializer<T> implements ContextualDeserializer {
+public abstract class ReferenceTypeDeserializer<T> extends StdDeserializer<T> {
 
 	protected final JavaType fullType;
 	protected final MemoryDeserializer<?> valueDeserializer;
@@ -27,7 +26,7 @@ public abstract class ReferenceTypeDeserializer<T> extends StdDeserializer<T> im
 
 	@Override
 	public T deserialize(ReadableMemory memory, DeserializationContext ctxt) {
-		Object contents = valueDeserializer.deserialize(memory.dereference(), ctxt);
+		Object contents = valueDeserializer.deserialize(memory.nextReference(), ctxt);
 		return referenceValue(contents);
 	}
 

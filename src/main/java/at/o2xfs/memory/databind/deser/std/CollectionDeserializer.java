@@ -14,12 +14,10 @@ import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
 import at.o2xfs.memory.databind.ReadableMemory;
 import at.o2xfs.memory.databind.annotation.MemoryList;
-import at.o2xfs.memory.databind.deser.ContextualDeserializer;
 import at.o2xfs.memory.databind.deser.win32.UShortDeserializer;
 import at.o2xfs.memory.databind.type.JavaType;
 
-public class CollectionDeserializer extends ContainerDeserializerBase<Collection<Object>>
-		implements ContextualDeserializer {
+public class CollectionDeserializer extends ContainerDeserializerBase<Collection<Object>> {
 
 	protected final MemoryDeserializer<Object> valueDeserializer;
 
@@ -65,7 +63,7 @@ public class CollectionDeserializer extends ContainerDeserializerBase<Collection
 			break;
 		}
 		for (int i = 0; i < size; i++) {
-			Object value = valueDeserializer.deserialize(memory.dereference(), ctxt);
+			Object value = valueDeserializer.deserialize(memory.nextReference(), ctxt);
 			result.add(value);
 		}
 		return result;
