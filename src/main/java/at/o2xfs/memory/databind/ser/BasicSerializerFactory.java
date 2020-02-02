@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.RandomAccess;
 
 import at.o2xfs.memory.databind.BeanDescription;
@@ -16,6 +17,7 @@ import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializationConfig;
 import at.o2xfs.memory.databind.SerializerProvider;
 import at.o2xfs.memory.databind.cfg.SerializerFactoryConfig;
+import at.o2xfs.memory.databind.ext.jdk8.Jdk8OptionalSerializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.jsontype.TypeSerializer;
 import at.o2xfs.memory.databind.ser.std.BooleanSerializer;
@@ -24,6 +26,7 @@ import at.o2xfs.memory.databind.ser.std.EnumSetSerializer;
 import at.o2xfs.memory.databind.ser.std.MapSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializers;
+import at.o2xfs.memory.databind.ser.std.ReferenceTypeSerializer;
 import at.o2xfs.memory.databind.ser.std.StringSerializer;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
@@ -85,6 +88,15 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 		return MapSerializer.build(type);
 	}
 
+	private MemorySerializer<?> buildReferenceSerializer(SerializerProvider ctxt, Class<?> baseType,
+			ReferenceType refType, BeanDescription beanDesc) {
+		ReferenceTypeSerializer<?> ser = null;
+		if (baseType == Optional.class) {
+			ser = new Jdk8OptionalSerializer(refType);
+		}
+		return ser;
+	}
+
 	private boolean isIndexedList(Class<?> cls) {
 		return RandomAccess.class.isAssignableFrom(cls);
 	}
@@ -130,6 +142,9 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 		for (Serializers serializers : customSerializers()) {
 			MemorySerializer<?> serializer = serializers
 					.findReferenceSerializer(config, refType, beanDesc, contentTypeSerializer);
+		}
+		if (refType.isTypeOrSubTypeOf(Optional.class)) {
+			return buildReferenceSerializer(ctxt, Optional.class, refType, beanDesc);
 		}
 		return result;
 	}

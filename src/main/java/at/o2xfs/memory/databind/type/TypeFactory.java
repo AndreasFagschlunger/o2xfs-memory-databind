@@ -14,8 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import at.o2xfs.memory.datatype.jdk8.Jdk8TypeModifier;
+import java.util.Optional;
 
 public final class TypeFactory {
 
@@ -35,7 +34,7 @@ public final class TypeFactory {
 	private final TypeModifier[] modifiers;
 
 	private TypeFactory() {
-		this.modifiers = new TypeModifier[] { new Jdk8TypeModifier() };
+		this.modifiers = null;
 	}
 
 	private TypeBindings bindingsForSubtype(JavaType baseType, int typeParamCount, Class<?> subclass) {
@@ -64,6 +63,21 @@ public final class TypeFactory {
 	private JavaType fromArrayType(GenericArrayType type, TypeBindings bindings) {
 		JavaType elementType = fromAny(type.getGenericComponentType(), bindings);
 		return ArrayType.construct(elementType, bindings);
+	}
+
+	private JavaType referenceType(Class<?> rawClass, TypeBindings bindings, JavaType superClass,
+			JavaType[] superInterfaces) {
+		List<JavaType> typeParams = bindings.getTypeParameters();
+		JavaType ct;
+		if (typeParams.isEmpty()) {
+			ct = unknownType();
+		} else if (typeParams.size() == 1) {
+			ct = typeParams.get(0);
+		} else {
+			throw new IllegalArgumentException(
+					"Strange Reference type " + rawClass.getName() + ": cannot determine type parameters");
+		}
+		return ReferenceType.construct(rawClass, bindings, superClass, superInterfaces, ct);
 	}
 
 	public JavaType constructSpecializedType(JavaType baseType, Class<?> subclass) {
@@ -129,8 +143,10 @@ public final class TypeFactory {
 		} else {
 			throw new IllegalArgumentException(type.toString());
 		}
-		for (TypeModifier each : modifiers) {
-			result = each.modifyType(result, type, result.getBindings(), this);
+		if (modifiers != null) {
+			for (TypeModifier each : modifiers) {
+				result = each.modifyType(result, type, result.getBindings(), this);
+			}
 		}
 		return result;
 	}
@@ -206,6 +222,8 @@ public final class TypeFactory {
 			result = mapType(rawType, bindings, superClass, superInterfaces);
 		} else if (rawType == Collection.class) {
 			result = collectionType(rawType, bindings, superClass, superInterfaces);
+		} else if (rawType == Optional.class) {
+			result = referenceType(rawType, bindings, superClass, superInterfaces);
 		}
 		return result;
 	}

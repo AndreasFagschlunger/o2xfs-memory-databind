@@ -3,7 +3,7 @@
  * Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
  * Modifications Copyright (c) 2019 Andreas Fagschlunger
  */
-package at.o2xfs.memory.datatype.jdk8;
+package at.o2xfs.memory.databind.ext.jdk8;
 
 import java.util.Optional;
 
@@ -11,13 +11,13 @@ import at.o2xfs.memory.databind.BeanProperty;
 import at.o2xfs.memory.databind.ser.std.ReferenceTypeSerializer;
 import at.o2xfs.memory.databind.type.ReferenceType;
 
-public class OptionalSerializer extends ReferenceTypeSerializer<Optional<?>> {
+public class Jdk8OptionalSerializer extends ReferenceTypeSerializer<Optional<?>> {
 
-	public OptionalSerializer(ReferenceType fullType) {
+	public Jdk8OptionalSerializer(ReferenceType fullType) {
 		super(fullType);
 	}
 
-	protected OptionalSerializer(OptionalSerializer base, BeanProperty property) {
+	protected Jdk8OptionalSerializer(Jdk8OptionalSerializer base, BeanProperty property) {
 		super(base, property);
 	}
 
@@ -28,6 +28,6 @@ public class OptionalSerializer extends ReferenceTypeSerializer<Optional<?>> {
 
 	@Override
 	protected ReferenceTypeSerializer<Optional<?>> withResolved(BeanProperty property) {
-		return new OptionalSerializer(this, property);
+		return new Jdk8OptionalSerializer(this, property);
 	}
 }

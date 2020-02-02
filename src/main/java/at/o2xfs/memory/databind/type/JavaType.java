@@ -89,6 +89,10 @@ public abstract class JavaType {
 		return getReferencedType() != null;
 	}
 
+	public final boolean isTypeOrSubTypeOf(Class<?> cls) {
+		return rawClass == cls || rawClass.isAssignableFrom(cls);
+	}
+
 	public abstract JavaType refine(Class<?> rawType, TypeBindings bindings, JavaType superClass,
 			JavaType[] superInterfaces);
 

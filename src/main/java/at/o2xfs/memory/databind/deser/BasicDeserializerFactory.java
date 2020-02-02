@@ -6,6 +6,7 @@
 package at.o2xfs.memory.databind.deser;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import at.o2xfs.memory.databind.AnnotationIntrospector;
 import at.o2xfs.memory.databind.BeanDescription;
@@ -19,6 +20,7 @@ import at.o2xfs.memory.databind.deser.std.EnumDeserializer;
 import at.o2xfs.memory.databind.deser.std.MapDeserializer;
 import at.o2xfs.memory.databind.deser.std.NumberDeserializers;
 import at.o2xfs.memory.databind.deser.std.StringDeserializer;
+import at.o2xfs.memory.databind.ext.jdk8.Jdk8OptionalDeserializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.introspect.AnnotatedConstructor;
 import at.o2xfs.memory.databind.introspect.AnnotatedMember;
@@ -127,7 +129,14 @@ public abstract class BasicDeserializerFactory extends DeserializerFactory {
 	@Override
 	public MemoryDeserializer<?> createReferenceDeserializer(DeserializationContext ctxt, ReferenceType type,
 			BeanDescription beanDesc) {
-		MemoryDeserializer<?> result = findCustomReferenceDeserializer(type, ctxt.getConfig(), beanDesc);
-		return result;
+		JavaType contentType = type.getContentType();
+		MemoryDeserializer<Object> contentTypeDeser = contentType.getTypeHandler();
+		MemoryDeserializer<?> deser = findCustomReferenceDeserializer(type, ctxt.getConfig(), beanDesc);
+		if (deser == null) {
+			if (type.isTypeOrSubTypeOf(Optional.class)) {
+				return new Jdk8OptionalDeserializer(type, contentTypeDeser);
+			}
+		}
+		return deser;
 	}
 }
