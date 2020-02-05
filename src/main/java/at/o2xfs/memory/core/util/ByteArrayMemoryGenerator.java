@@ -9,6 +9,8 @@ import at.o2xfs.common.ByteArrayBuffer;
 
 public class ByteArrayMemoryGenerator extends BaseMemoryGenerator {
 
+	private static final byte[] NULL = new byte[4];
+
 	private final ByteArrayMemorySystem memorySystem;
 	private final List<ByteArrayBuffer> buffers;
 	private Address address;
@@ -46,7 +48,7 @@ public class ByteArrayMemoryGenerator extends BaseMemoryGenerator {
 
 	@Override
 	public void writeNull() {
-
+		write(NULL);
 	}
 
 	@Override
@@ -67,8 +69,12 @@ public class ByteArrayMemoryGenerator extends BaseMemoryGenerator {
 	@Override
 	public void endPointer() {
 		ByteArrayBuffer buffer = buffers.remove(buffers.size() - 1);
-		ByteArrayMemory memory = memorySystem.allocate(buffer.toByteArray());
-		write(memory.getAddress().getValue());
+		if (buffer.length() == 0) {
+			writeNull();
+		} else {
+			ByteArrayMemory memory = memorySystem.allocate(buffer.toByteArray());
+			write(memory.getAddress().getValue());
+		}
 	}
 
 	public Address allocate() throws IOException {

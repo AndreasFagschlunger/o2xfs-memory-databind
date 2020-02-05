@@ -22,6 +22,9 @@ public abstract class DefaultSerializerProvider extends SerializerProvider {
 
 	@Override
 	public MemorySerializer<?> serializerInstance(Annotated annotated, Object serDef) {
+		if (serDef == null) {
+			return null;
+		}
 		return (MemorySerializer<?>) ClassUtil.createInstance((Class<?>) serDef);
 	}
 

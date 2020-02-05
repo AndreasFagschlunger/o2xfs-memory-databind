@@ -18,6 +18,10 @@ import java.util.Optional;
 
 public final class TypeFactory {
 
+	private static final JavaType[] NO_TYPES = new JavaType[0];
+
+	private static final TypeBindings EMPTY_BINDINGS = TypeBindings.emptyBindings();
+
 	private static final Class<?> CLS_COMPARABLE = Comparable.class;
 	private static final Class<?> CLS_ENUM = Enum.class;
 
@@ -80,6 +84,12 @@ public final class TypeFactory {
 		return ReferenceType.construct(rawClass, bindings, superClass, superInterfaces, ct);
 	}
 
+	public CollectionType constructCollectionType(Class<? extends Collection> collectionClass, JavaType elementType) {
+		TypeBindings bindings = TypeBindings.createIfNeeded(collectionClass, elementType);
+		CollectionType result = (CollectionType) fromClass(collectionClass, bindings);
+		return result;
+	}
+
 	public JavaType constructSpecializedType(JavaType baseType, Class<?> subclass) {
 		JavaType result = null;
 		final Class<?> rawBase = baseType.getRawClass();
@@ -108,6 +118,14 @@ public final class TypeFactory {
 
 	public JavaType constructType(Type type, TypeBindings bindings) {
 		return fromAny(type, bindings);
+	}
+
+	public JavaType[] findTypeParameters(JavaType type, Class<?> expType) {
+		JavaType match = type.findSuperType(expType);
+		if (match == null) {
+			return NO_TYPES;
+		}
+		return match.getBindings().typeParameterArray();
 	}
 
 	private JavaType findWellKnownSimple(Class<?> cls) {

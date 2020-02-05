@@ -5,6 +5,7 @@
  */
 package at.o2xfs.memory.databind.deser;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -28,10 +29,12 @@ import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.MapType;
 import at.o2xfs.memory.databind.type.ReferenceType;
+import at.o2xfs.memory.databind.type.TypeFactory;
 
 public abstract class BasicDeserializerFactory extends DeserializerFactory {
 
 	private final static Class<?> CLASS_STRING = String.class;
+	private final static Class<?> CLASS_ITERABLE = Iterable.class;
 
 	private final DeserializerFactoryConfig factoryConfig;
 
@@ -102,6 +105,13 @@ public abstract class BasicDeserializerFactory extends DeserializerFactory {
 		MemoryDeserializer<?> result = null;
 		if (rawType == CLASS_STRING) {
 			return StringDeserializer.instance;
+		}
+		if (rawType == CLASS_ITERABLE) {
+			TypeFactory tf = ctxt.getTypeFactory();
+			JavaType[] tps = tf.findTypeParameters(type, CLASS_ITERABLE);
+			JavaType elemType = (tps == null || tps.length != 1) ? TypeFactory.unknownType() : tps[0];
+			CollectionType ct = tf.constructCollectionType(Collection.class, elemType);
+			return createCollectionDeserializer(ctxt, ct, beanDesc);
 		}
 		if (rawType.isPrimitive() || clsName.startsWith("java.")) {
 			result = NumberDeserializers.find(rawType, clsName);

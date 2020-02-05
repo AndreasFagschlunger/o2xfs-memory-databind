@@ -74,6 +74,10 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 	public void serializeAsField(Object obj, MemoryGenerator gen, SerializerProvider prov) throws Exception {
 		Object value = accessorMethod != null ? accessorMethod.invoke(obj) : field.get(obj);
 		System.out.println("value=" + value + ",serializer=" + serializer);
+		if (value == null) {
+			gen.writeNull();
+			return;
+		}
 		MemorySerializer<Object> ser = serializer;
 		if (ser == null) {
 			Class<?> cls = value.getClass();

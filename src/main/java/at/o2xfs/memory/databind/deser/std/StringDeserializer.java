@@ -18,7 +18,11 @@ public class StringDeserializer extends StdDeserializer<String> {
 	}
 
 	@Override
-	public String deserialize(ReadableMemory memory, DeserializationContext ctxt) {
+	public String deserialize(ReadableMemory aMemory, DeserializationContext ctxt) {
+		ReadableMemory memory = aMemory.nextReference();
+		if (memory == null) {
+			return null;
+		}
 		ByteArrayBuffer buffer = new ByteArrayBuffer(32);
 		do {
 			buffer.append(memory.read(1));
