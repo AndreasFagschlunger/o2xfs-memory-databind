@@ -7,12 +7,12 @@ package at.o2xfs.memory.databind;
 
 import java.util.Objects;
 
+import at.o2xfs.memory.core.MemoryGenerator;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.introspect.AnnotatedClass;
 import at.o2xfs.memory.databind.introspect.AnnotatedMember;
 import at.o2xfs.memory.databind.introspect.ClassIntrospector;
 import at.o2xfs.memory.databind.jsontype.TypeSerializer;
-import at.o2xfs.memory.databind.ser.ContextualSerializer;
 import at.o2xfs.memory.databind.ser.SerializerCache;
 import at.o2xfs.memory.databind.ser.SerializerFactory;
 import at.o2xfs.memory.databind.ser.impl.ReadOnlyClassToSerializerMap;
@@ -71,6 +71,10 @@ public abstract class SerializerProvider extends DatabindContext {
 			classIntrospector = config.classIntrospectorInstance();
 		}
 		return classIntrospector;
+	}
+
+	public final void defaultSerializeNullValue(MemoryGenerator gen) {
+		gen.writeNull();
 	}
 
 	@Override
@@ -163,17 +167,16 @@ public abstract class SerializerProvider extends DatabindContext {
 
 	public MemorySerializer<Object> handlePrimaryContextualization(MemorySerializer<?> ser, BeanProperty property) {
 		if (ser != null) {
-			ser.createContextual(this, property);
+			ser = ser.createContextual(this, property);
 		}
 		return (MemorySerializer<Object>) ser;
 	}
 
 	public MemorySerializer<Object> handleSecondaryContextualization(MemorySerializer<?> ser, BeanProperty property) {
-		MemorySerializer<?> result = ser;
-		if (ser instanceof ContextualSerializer) {
-			result = ((ContextualSerializer) ser).createContextual(this, property);
+		if (ser != null) {
+			ser = ser.createContextual(this, property);
 		}
-		return (MemorySerializer<Object>) result;
+		return (MemorySerializer<Object>) ser;
 	}
 
 	@Override

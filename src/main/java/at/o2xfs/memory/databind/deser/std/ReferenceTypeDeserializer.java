@@ -8,7 +8,6 @@ package at.o2xfs.memory.databind.deser.std;
 import at.o2xfs.memory.databind.BeanProperty;
 import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
-import at.o2xfs.memory.databind.ReadableMemory;
 import at.o2xfs.memory.databind.type.JavaType;
 
 public abstract class ReferenceTypeDeserializer<T> extends StdDeserializer<T> {
@@ -23,12 +22,6 @@ public abstract class ReferenceTypeDeserializer<T> extends StdDeserializer<T> {
 	}
 
 	protected abstract ReferenceTypeDeserializer<T> withResolved(MemoryDeserializer<?> valueDeser);
-
-	@Override
-	public T deserialize(ReadableMemory memory, DeserializationContext ctxt) {
-		Object contents = valueDeserializer.deserialize(memory.nextReference(), ctxt);
-		return referenceValue(contents);
-	}
 
 	@Override
 	public MemoryDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {

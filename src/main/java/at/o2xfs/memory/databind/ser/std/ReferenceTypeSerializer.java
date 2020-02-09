@@ -7,15 +7,14 @@ package at.o2xfs.memory.databind.ser.std;
 
 import java.io.IOException;
 
-import at.o2xfs.memory.databind.BeanProperty;
 import at.o2xfs.memory.core.MemoryGenerator;
+import at.o2xfs.memory.databind.BeanProperty;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializerProvider;
-import at.o2xfs.memory.databind.ser.ContextualSerializer;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.ReferenceType;
 
-public abstract class ReferenceTypeSerializer<T> extends StdDynamicSerializer<T> implements ContextualSerializer {
+public abstract class ReferenceTypeSerializer<T> extends StdDynamicSerializer<T> {
 
 	protected final JavaType referredType;
 	protected final BeanProperty property;
@@ -56,6 +55,10 @@ public abstract class ReferenceTypeSerializer<T> extends StdDynamicSerializer<T>
 	@Override
 	public void serialize(T ref, MemoryGenerator gen, SerializerProvider provider) throws IOException {
 		Object value = getReferencedIfPresent(ref);
+		if (value == null) {
+			provider.defaultSerializeNullValue(gen);
+			return;
+		}
 		MemorySerializer<Object> ser = findCachedSerializer(provider, value.getClass());
 		gen.startPointer();
 		ser.serialize(value, gen, provider);

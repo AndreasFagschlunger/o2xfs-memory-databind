@@ -21,6 +21,7 @@ public abstract class SettableBeanProperty extends ConcreteBeanPropertyBase {
 	private final PropertyName propName;
 	private final JavaType type;
 	protected final MemoryDeserializer<Object> valueDeserializer;
+	protected final NullValueProvider nullProvider;
 
 	protected SettableBeanProperty(BeanPropertyDefinition propDef, JavaType type) {
 		this(propDef.getFullName(), type, null);
@@ -34,6 +35,7 @@ public abstract class SettableBeanProperty extends ConcreteBeanPropertyBase {
 		this.propName = Objects.requireNonNull(propName);
 		this.type = Objects.requireNonNull(type);
 		this.valueDeserializer = (MemoryDeserializer<Object>) valueDeserializer;
+		this.nullProvider = valueDeserializer;
 
 	}
 

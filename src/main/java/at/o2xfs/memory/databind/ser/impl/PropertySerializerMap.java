@@ -44,13 +44,38 @@ public abstract class PropertySerializerMap {
 
 		@Override
 		public PropertySerializerMap newWith(Class<?> type, MemorySerializer<Object> serializer) {
-			return null;
+			return new Single(type, serializer);
 		}
 
 		@Override
 		public MemorySerializer<Object> serializerFor(Class<?> cls) {
 			return null;
 		}
+	}
+
+	private static final class Single extends PropertySerializerMap {
+
+		private final Class<?> type;
+		private final MemorySerializer<Object> serializer;
+
+		public Single(Class<?> type, MemorySerializer<Object> serializer) {
+			this.type = type;
+			this.serializer = serializer;
+		}
+
+		@Override
+		public PropertySerializerMap newWith(Class<?> type, MemorySerializer<Object> serializer) {
+			throw new RuntimeException();
+		}
+
+		@Override
+		public MemorySerializer<Object> serializerFor(Class<?> cls) {
+			if (type == cls) {
+				return serializer;
+			}
+			return null;
+		}
+
 	}
 
 	public static final class SerializerAndMapResult {
