@@ -5,7 +5,9 @@
  */
 package at.o2xfs.memory.databind.deser;
 
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 
 import at.o2xfs.memory.databind.AnnotationIntrospector;
 import at.o2xfs.memory.databind.BeanDescription;
@@ -19,6 +21,7 @@ import at.o2xfs.memory.databind.deser.std.EnumDeserializer;
 import at.o2xfs.memory.databind.deser.std.MapDeserializer;
 import at.o2xfs.memory.databind.deser.std.NumberDeserializers;
 import at.o2xfs.memory.databind.deser.std.StringDeserializer;
+import at.o2xfs.memory.databind.ext.jdk8.Jdk8OptionalDeserializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.introspect.AnnotatedConstructor;
 import at.o2xfs.memory.databind.introspect.AnnotatedMember;
@@ -26,10 +29,12 @@ import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.MapType;
 import at.o2xfs.memory.databind.type.ReferenceType;
+import at.o2xfs.memory.databind.type.TypeFactory;
 
 public abstract class BasicDeserializerFactory extends DeserializerFactory {
 
 	private final static Class<?> CLASS_STRING = String.class;
+	private final static Class<?> CLASS_ITERABLE = Iterable.class;
 
 	private final DeserializerFactoryConfig factoryConfig;
 
@@ -101,6 +106,13 @@ public abstract class BasicDeserializerFactory extends DeserializerFactory {
 		if (rawType == CLASS_STRING) {
 			return StringDeserializer.instance;
 		}
+		if (rawType == CLASS_ITERABLE) {
+			TypeFactory tf = ctxt.getTypeFactory();
+			JavaType[] tps = tf.findTypeParameters(type, CLASS_ITERABLE);
+			JavaType elemType = (tps == null || tps.length != 1) ? TypeFactory.unknownType() : tps[0];
+			CollectionType ct = tf.constructCollectionType(Collection.class, elemType);
+			return createCollectionDeserializer(ctxt, ct, beanDesc);
+		}
 		if (rawType.isPrimitive() || clsName.startsWith("java.")) {
 			result = NumberDeserializers.find(rawType, clsName);
 		}
@@ -127,7 +139,14 @@ public abstract class BasicDeserializerFactory extends DeserializerFactory {
 	@Override
 	public MemoryDeserializer<?> createReferenceDeserializer(DeserializationContext ctxt, ReferenceType type,
 			BeanDescription beanDesc) {
-		MemoryDeserializer<?> result = findCustomReferenceDeserializer(type, ctxt.getConfig(), beanDesc);
-		return result;
+		JavaType contentType = type.getContentType();
+		MemoryDeserializer<Object> contentTypeDeser = contentType.getTypeHandler();
+		MemoryDeserializer<?> deser = findCustomReferenceDeserializer(type, ctxt.getConfig(), beanDesc);
+		if (deser == null) {
+			if (type.isTypeOrSubTypeOf(Optional.class)) {
+				return new Jdk8OptionalDeserializer(type, contentTypeDeser);
+			}
+		}
+		return deser;
 	}
 }

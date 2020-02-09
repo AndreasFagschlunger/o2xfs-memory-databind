@@ -10,7 +10,9 @@ import java.lang.annotation.Annotation;
 import at.o2xfs.memory.databind.annotation.MemoryAnnotationsInside;
 import at.o2xfs.memory.databind.annotation.MemoryDeserialize;
 import at.o2xfs.memory.databind.annotation.MemorySerialize;
+import at.o2xfs.memory.databind.cfg.MapperConfig;
 import at.o2xfs.memory.databind.introspect.Annotated;
+import at.o2xfs.memory.databind.introspect.AnnotatedClass;
 
 public class AnnotationIntrospector {
 
@@ -18,7 +20,7 @@ public class AnnotationIntrospector {
 		return annotated.getAnnotation(cls);
 	}
 
-	public Class<?> findPOJOBuilder() {
+	public Class<?> findPOJOBuilder(MapperConfig<?> config, AnnotatedClass ac) {
 		return null;
 	}
 
@@ -34,6 +36,10 @@ public class AnnotationIntrospector {
 		return result;
 	}
 
+	public Object findContentSerializer(SerializationConfig config, Annotated am) {
+		return null;
+	}
+
 	public Object findSerializer(Annotated a) {
 		MemorySerialize ann = findAnnotation(a, MemorySerialize.class);
 		if (ann != null && MemorySerializer.None.class != ann.using()) {
@@ -46,4 +52,5 @@ public class AnnotationIntrospector {
 		Class<?> type = ann.annotationType();
 		return type.getAnnotation(MemoryAnnotationsInside.class) != null;
 	}
+
 }

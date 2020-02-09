@@ -26,6 +26,11 @@ public final class ArrayType extends TypeBase {
 	}
 
 	@Override
+	public boolean isArrayType() {
+		return true;
+	}
+
+	@Override
 	public boolean isContainerType() {
 		return true;
 	}

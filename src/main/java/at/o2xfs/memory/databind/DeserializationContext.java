@@ -7,22 +7,24 @@ package at.o2xfs.memory.databind;
 
 import java.util.Objects;
 
-import at.o2xfs.memory.databind.deser.ContextualDeserializer;
 import at.o2xfs.memory.databind.deser.DeserializerCache;
 import at.o2xfs.memory.databind.deser.DeserializerFactory;
 import at.o2xfs.memory.databind.introspect.Annotated;
+import at.o2xfs.memory.databind.introspect.ClassIntrospector;
 import at.o2xfs.memory.databind.type.JavaType;
+import at.o2xfs.memory.databind.type.TypeFactory;
 
-public abstract class DeserializationContext {
+public abstract class DeserializationContext extends DatabindContext {
 
 	private final DeserializationConfig config;
 	protected final DeserializerFactory factory;
 	private final DeserializerCache cache;
+	protected ClassIntrospector classIntrospector;
 
-	public DeserializationContext(DeserializerFactory factory, DeserializationConfig config) {
+	public DeserializationContext(DeserializerFactory factory, DeserializerCache cache, DeserializationConfig config) {
 		this.factory = Objects.requireNonNull(factory);
 		this.config = config;
-		cache = new DeserializerCache();
+		this.cache = cache;
 	}
 
 	protected DeserializationContext(DeserializationContext src, DeserializerFactory factory) {
@@ -36,6 +38,14 @@ public abstract class DeserializationContext {
 		this.config = config;
 		factory = src.factory;
 		cache = src.cache;
+	}
+
+	@Override
+	protected ClassIntrospector classIntrospector() {
+		if (classIntrospector == null) {
+			classIntrospector = config.classIntrospectorInstance();
+		}
+		return classIntrospector;
 	}
 
 	public final JavaType constructType(Class<?> cls) {
@@ -59,22 +69,36 @@ public abstract class DeserializationContext {
 		return result;
 	}
 
+	public final AnnotationIntrospector getAnnotationIntrospector() {
+		return config.getAnnotationIntrospector();
+	}
+
+	@Override
 	public DeserializationConfig getConfig() {
 		return config;
 	}
 
-	public final AnnotationIntrospector getAnnotationIntrospector() {
-		return config.getAnnotationIntrospector();
+	@Override
+	public final TypeFactory getTypeFactory() {
+		return config.getTypeFactory();
 	}
 
 	public abstract MemoryDeserializer<Object> deserializerInstance(Annotated annotated, Object deserDef);
 
 	public MemoryDeserializer<?> handlePrimaryContextualization(MemoryDeserializer<?> deser, BeanProperty prop,
 			JavaType type) {
-		if (deser instanceof ContextualDeserializer) {
-			deser = ((ContextualDeserializer) deser).createContextual(this, prop);
+		if (deser != null) {
+			deser = deser.createContextual(this, prop);
 		}
 		return deser;
 	}
 
+	@Override
+	public BeanDescription introspectBeanDescription(JavaType type) {
+		return classIntrospector().introspectForDeserialization(type);
+	}
+
+	public BeanDescription introspectBeanDescriptionForBuilder(JavaType type) {
+		return classIntrospector().introspectForDeserializationWithBuilder(type);
+	}
 }

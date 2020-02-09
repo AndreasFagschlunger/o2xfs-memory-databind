@@ -5,50 +5,48 @@
  */
 package at.o2xfs.memory.databind;
 
+import java.io.IOException;
 import java.util.Objects;
 
-import at.o2xfs.memory.databind.Module.SetupContext;
-import at.o2xfs.memory.databind.deser.BeanDeserializerFactory;
+import at.o2xfs.memory.core.MemoryGenerator;
+import at.o2xfs.memory.databind.cfg.DeserializationContexts;
+import at.o2xfs.memory.databind.cfg.MapperBuilder;
+import at.o2xfs.memory.databind.cfg.SerializationContexts;
 import at.o2xfs.memory.databind.deser.DefaultDeserializationContext;
-import at.o2xfs.memory.databind.deser.DeserializerFactory;
-import at.o2xfs.memory.databind.deser.Deserializers;
-import at.o2xfs.memory.databind.introspect.BasicClassIntrospector;
 import at.o2xfs.memory.databind.introspect.ClassIntrospector;
-import at.o2xfs.memory.databind.ser.BeanSerializerFactory;
 import at.o2xfs.memory.databind.ser.DefaultSerializerProvider;
 import at.o2xfs.memory.databind.ser.SerializerFactory;
-import at.o2xfs.memory.databind.ser.Serializers;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.TypeFactory;
-import at.o2xfs.memory.datatype.jdk8.Jdk8Serializers;
 
 public class MemoryMapper {
 
-	private final static AnnotationIntrospector DEFAULT_ANNOTATION_INTROSPECTOR = new AnnotationIntrospector();
-
 	private final TypeFactory typeFactory;
+	private final SerializationContexts serializationContexts;
+	private final SerializationConfig serializationConfig;
 
 	private final DeserializationConfig deserializationConfig;
 
-	private DefaultDeserializationContext deserializationContext;
+	private DeserializationContexts deserializationContexts;
 
-	private final SerializationConfig serializationConfig;
 	private SerializerFactory serializerFactory;
-	private final DefaultSerializerProvider serializerProvider;
 
 	public MemoryMapper() {
-		typeFactory = TypeFactory.defaultInstance();
-		ClassIntrospector classIntrospector = new BasicClassIntrospector();
-		deserializationConfig = new DeserializationConfig(typeFactory, classIntrospector,
-				DEFAULT_ANNOTATION_INTROSPECTOR);
-		deserializationContext = new DefaultDeserializationContext.Impl(BeanDeserializerFactory.INSTANCE);
-		serializationConfig = new SerializationConfig(typeFactory, classIntrospector, DEFAULT_ANNOTATION_INTROSPECTOR);
-		serializerProvider = new DefaultSerializerProvider.Impl();
-		serializerFactory = BeanSerializerFactory.instance.withAdditionalSerializers(new Jdk8Serializers());
+		this(new PrivateBuilder());
 	}
 
-	private DeserializationContext createDeserializationContext(DeserializationConfig cfg) {
-		return deserializationContext.createInstance(cfg);
+	public MemoryMapper(MapperBuilder b) {
+		typeFactory = b.typeFactory();
+		serializationContexts = b.serializationContexts().forMapper(this, b.serializerFactory());
+		deserializationContexts = b.deserializationContexts().forMapper(this, b.deserializerFactory());
+
+		ClassIntrospector classIntr = b.classIntrospector().forMapper();
+		deserializationConfig = b.buildDeserializationConfig(typeFactory, classIntr);
+		serializationConfig = b.buildSerializationConfig(typeFactory, classIntr);
+	}
+
+	private DefaultDeserializationContext deserializationContext() {
+		return deserializationContexts.createContext(deserializationConfig());
 	}
 
 	private MemoryDeserializer<Object> findRootDeserializer(DeserializationContext ctxt, JavaType valueType) {
@@ -57,46 +55,39 @@ public class MemoryMapper {
 	}
 
 	private Object readMapAndClose(ReadableMemory memory, JavaType valueType) {
-		DeserializationContext ctxt = createDeserializationContext(deserializationConfig);
+		DeserializationContext ctxt = deserializationContext();
 		MemoryDeserializer<Object> deser = findRootDeserializer(ctxt, valueType);
 		Object result = deser.deserialize(memory, ctxt);
 		return result;
 	}
 
-	private SerializerProvider serializerProvider(SerializationConfig config) {
-		return serializerProvider.createInstance(config, serializerFactory);
+	private DefaultSerializerProvider serializerProvider() {
+		return serializationContexts.createContext(serializationConfig());
+	}
+
+	public DeserializationConfig deserializationConfig() {
+		return deserializationConfig;
 	}
 
 	public SerializationConfig getSerializationConfig() {
 		return serializationConfig;
 	}
 
-	public MemoryMapper registerModule(Module module) {
-		module.setupModule(new SetupContext() {
-
-			@Override
-			public void addSerializers(Serializers s) {
-				serializerFactory = serializerFactory.withAdditionalSerializers(s);
-			}
-
-			@Override
-			public void addDeserializers(Deserializers d) {
-				DeserializerFactory df = deserializationContext.factory.withAdditionalDeserializers(d);
-				deserializationContext = deserializationContext.with(df);
-
-			}
-		});
-		return this;
+	public SerializationConfig serializationConfig() {
+		return serializationConfig;
 	}
 
-	public void write(MemoryGenerator memory, Object value) {
-		SerializationConfig cfg = getSerializationConfig();
-		serializerProvider(cfg).serializeValue(memory, value);
+	public void write(MemoryGenerator gen, Object value) throws IOException {
+		serializerProvider().serializeValue(gen, value);
 	}
 
 	public <T> T read(ReadableMemory memory, Class<T> valueType) {
 		Objects.requireNonNull(memory, "memory must not be null");
 		Objects.requireNonNull(valueType, "valueType must not be null");
 		return (T) readMapAndClose(memory, typeFactory.constructType(valueType));
+	}
+
+	private static final class PrivateBuilder extends MapperBuilder {
+
 	}
 }

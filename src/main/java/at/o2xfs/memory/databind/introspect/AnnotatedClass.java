@@ -7,16 +7,16 @@ package at.o2xfs.memory.databind.introspect;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
-import at.o2xfs.memory.databind.AnnotationIntrospector;
+import at.o2xfs.memory.databind.cfg.MapperConfig;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.TypeBindings;
-import at.o2xfs.memory.databind.type.TypeFactory;
 
 public class AnnotatedClass extends Annotated implements TypeResolutionContext {
 
@@ -29,27 +29,34 @@ public class AnnotatedClass extends Annotated implements TypeResolutionContext {
 		}
 	}
 
+	private final MapperConfig<?> config;
+
 	private final JavaType type;
 	private final Class<?> rawType;
 	private final TypeBindings bindings;
 	private final List<JavaType> superTypes;
-	private final AnnotationIntrospector annotationIntrospector;
-	private final TypeFactory typeFactory;
 	private final Map<Class<?>, Annotation> classAnnotations;
 	private Creators creators;
 	private AnnotatedMethodMap memberMethods;
 	private List<AnnotatedField> fields;
 
-	public AnnotatedClass(JavaType type, Class<?> rawType, List<JavaType> superTypes,
-			Map<Class<?>, Annotation> classAnnotations, TypeBindings bindings,
-			AnnotationIntrospector annotationIntrospector, TypeFactory typeFactory) {
+	AnnotatedClass(MapperConfig<?> config, JavaType type, Class<?> rawType, List<JavaType> superTypes,
+			Map<Class<?>, Annotation> classAnnotations, TypeBindings bindings) {
+		this.config = config;
 		this.type = Objects.requireNonNull(type);
 		this.rawType = rawType;
 		this.superTypes = superTypes;
 		this.classAnnotations = classAnnotations;
 		this.bindings = bindings;
-		this.annotationIntrospector = annotationIntrospector;
-		this.typeFactory = Objects.requireNonNull(typeFactory);
+	}
+
+	AnnotatedClass(Class<?> rawType) {
+		config = null;
+		type = null;
+		this.rawType = rawType;
+		superTypes = Collections.emptyList();
+		classAnnotations = Collections.emptyMap();
+		bindings = TypeBindings.emptyBindings();
 	}
 
 	private Creators creators() {
@@ -61,15 +68,14 @@ public class AnnotatedClass extends Annotated implements TypeResolutionContext {
 
 	private AnnotatedMethodMap methods() {
 		if (memberMethods == null) {
-			memberMethods = AnnotatedMethodCollector
-					.collectMethods(annotationIntrospector, this, typeFactory, type, superTypes);
+			memberMethods = AnnotatedMethodCollector.collectMethods(config, this, type, superTypes);
 		}
 		return memberMethods;
 	}
 
 	public List<AnnotatedField> fields() {
 		if (fields == null) {
-			fields = AnnotatedFieldCollector.collectFields(annotationIntrospector, this, type);
+			fields = AnnotatedFieldCollector.collectFields(config, this, type);
 		}
 		return fields;
 	}
@@ -101,7 +107,7 @@ public class AnnotatedClass extends Annotated implements TypeResolutionContext {
 
 	@Override
 	public JavaType resolveType(Type t) {
-		return typeFactory.constructType(t, bindings);
+		return config.getTypeFactory().constructType(t, bindings);
 	}
 
 	@Override

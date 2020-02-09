@@ -7,12 +7,12 @@ package at.o2xfs.memory.databind.ser;
 
 import java.util.List;
 
-import at.o2xfs.memory.databind.MemoryGenerator;
+import at.o2xfs.memory.core.MemoryGenerator;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializerProvider;
 import at.o2xfs.memory.databind.type.JavaType;
 
-public abstract class BeanSerializerBase extends MemorySerializer<Object> implements ResolvableSerializer {
+public abstract class BeanSerializerBase extends MemorySerializer<Object> {
 
 	protected final List<BeanPropertyWriter> properties;
 
@@ -22,7 +22,11 @@ public abstract class BeanSerializerBase extends MemorySerializer<Object> implem
 
 	protected void serializeFields(Object obj, MemoryGenerator gen, SerializerProvider prov) {
 		for (BeanPropertyWriter property : properties) {
-			property.serializeAsField(obj, gen, prov);
+			try {
+				property.serializeAsField(obj, gen, prov);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -39,7 +43,7 @@ public abstract class BeanSerializerBase extends MemorySerializer<Object> implem
 				}
 				continue;
 			}
-			MemorySerializer<Object> ser = provider.findValueSerializer(type, prop);
+			MemorySerializer<Object> ser = provider.findPrimaryPropertySerializer(type, prop);
 			prop.assignSerializer(ser);
 		}
 	}

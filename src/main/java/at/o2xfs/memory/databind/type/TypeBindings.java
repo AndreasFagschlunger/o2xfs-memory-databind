@@ -21,6 +21,10 @@ public class TypeBindings {
 		this.types = types;
 	}
 
+	protected JavaType[] typeParameterArray() {
+		return types;
+	}
+
 	public JavaType getBoundType(int index) {
 		return types[index];
 	}
@@ -60,6 +64,19 @@ public class TypeBindings {
 			names[i] = vars[i].getName();
 		}
 		return new TypeBindings(names, types);
+	}
+
+	public static TypeBindings createIfNeeded(Class<?> erasedType, JavaType typeArg1) {
+		TypeVariable<?>[] vars = erasedType.getTypeParameters();
+		int varLen = (vars == null) ? 0 : vars.length;
+		if (varLen == 0) {
+			return EMPTY;
+		}
+		if (varLen != 1) {
+			throw new IllegalArgumentException("Cannot create TypeBindings for class " + erasedType.getName()
+					+ " with 1 type parameter: class expects " + varLen);
+		}
+		return new TypeBindings(new String[] { vars[0].getName() }, new JavaType[] { typeArg1 });
 	}
 
 	public JavaType findBoundType(String name) {

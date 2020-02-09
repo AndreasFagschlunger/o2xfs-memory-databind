@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import at.o2xfs.memory.databind.AnnotationIntrospector;
+import at.o2xfs.memory.databind.cfg.MapperConfig;
 import at.o2xfs.memory.databind.type.JavaType;
-import at.o2xfs.memory.databind.type.TypeFactory;
 import at.o2xfs.memory.databind.util.ClassUtil;
 
 public class AnnotatedMethodCollector extends CollectorBase {
@@ -36,8 +35,8 @@ public class AnnotatedMethodCollector extends CollectorBase {
 		}
 	}
 
-	public AnnotatedMethodCollector(AnnotationIntrospector intr) {
-		super(intr);
+	public AnnotatedMethodCollector(MapperConfig<?> config) {
+		super(config);
 	}
 
 	private void addMemberMethods(TypeResolutionContext tc, Class<?> cls, Map<MemberKey, MethodBuilder> methods) {
@@ -55,13 +54,12 @@ public class AnnotatedMethodCollector extends CollectorBase {
 		}
 	}
 
-	private AnnotatedMethodMap collect(TypeFactory typeFactory, TypeResolutionContext tc, JavaType mainType,
-			List<JavaType> superTypes) {
+	private AnnotatedMethodMap collect(TypeResolutionContext tc, JavaType mainType, List<JavaType> superTypes) {
 		Map<MemberKey, MethodBuilder> methods = new LinkedHashMap<>();
 		addMemberMethods(tc, mainType.getRawClass(), methods);
 		for (JavaType type : superTypes) {
-			addMemberMethods(new TypeResolutionContext.Basic(typeFactory, type.getBindings()), type.getRawClass(),
-					methods);
+			addMemberMethods(new TypeResolutionContext.Basic(config.getTypeFactory(), type.getBindings()),
+					type.getRawClass(), methods);
 		}
 
 		Map<MemberKey, AnnotatedMethod> actual = new LinkedHashMap<>();
@@ -79,9 +77,9 @@ public class AnnotatedMethodCollector extends CollectorBase {
 		return result;
 	}
 
-	public static AnnotatedMethodMap collectMethods(AnnotationIntrospector intr, TypeResolutionContext tc,
-			TypeFactory typeFactory, JavaType type, List<JavaType> superTypes) {
-		return new AnnotatedMethodCollector(intr).collect(typeFactory, tc, type, superTypes);
+	public static AnnotatedMethodMap collectMethods(MapperConfig<?> config, TypeResolutionContext tc, JavaType type,
+			List<JavaType> superTypes) {
+		return new AnnotatedMethodCollector(config).collect(tc, type, superTypes);
 	}
 
 }

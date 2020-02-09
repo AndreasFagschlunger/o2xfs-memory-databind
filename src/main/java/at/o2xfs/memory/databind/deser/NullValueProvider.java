@@ -7,7 +7,7 @@ package at.o2xfs.memory.databind.deser;
 
 import at.o2xfs.memory.databind.DeserializationContext;
 
-public interface ResolvableDeserializer {
+public interface NullValueProvider {
 
-	public void resolve(DeserializationContext ctxt);
+	public Object getNullValue(DeserializationContext ctxt);
 }

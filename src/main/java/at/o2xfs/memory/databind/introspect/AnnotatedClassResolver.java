@@ -17,11 +17,11 @@ import at.o2xfs.memory.databind.util.ClassUtil;
 
 public final class AnnotatedClassResolver {
 
-	private final MapperConfig config;
+	private final MapperConfig<?> config;
 	private final JavaType type;
 	private final Class<?> rawType;
 
-	private AnnotatedClassResolver(MapperConfig config, JavaType type) {
+	private AnnotatedClassResolver(MapperConfig<?> config, JavaType type) {
 		this.config = Objects.requireNonNull(config);
 		this.type = Objects.requireNonNull(type);
 		this.rawType = type.getRawClass();
@@ -43,12 +43,12 @@ public final class AnnotatedClassResolver {
 
 	private AnnotatedClass resolveFully() {
 		List<JavaType> superTypes = ClassUtil.findSuperTypes(type);
-		return new AnnotatedClass(type, rawType, superTypes, resolveClassAnnotations(superTypes), type.getBindings(),
-				config.getAnnotationIntrospector(), config.getTypeFactory());
+		return new AnnotatedClass(config, type, rawType, superTypes, resolveClassAnnotations(superTypes),
+				type.getBindings());
 
 	}
 
-	public static AnnotatedClass resolve(MapperConfig config, JavaType forType) {
+	public static AnnotatedClass resolve(MapperConfig<?> config, JavaType forType) {
 		return new AnnotatedClassResolver(config, forType).resolveFully();
 	}
 }

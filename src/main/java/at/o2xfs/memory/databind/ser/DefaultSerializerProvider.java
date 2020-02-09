@@ -5,6 +5,9 @@
  */
 package at.o2xfs.memory.databind.ser;
 
+import java.io.IOException;
+
+import at.o2xfs.memory.core.MemoryGenerator;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializationConfig;
 import at.o2xfs.memory.databind.SerializerProvider;
@@ -13,36 +16,28 @@ import at.o2xfs.memory.databind.util.ClassUtil;
 
 public abstract class DefaultSerializerProvider extends SerializerProvider {
 
-	protected DefaultSerializerProvider() {
-		super();
+	protected DefaultSerializerProvider(SerializationConfig config, SerializerFactory f, SerializerCache cache) {
+		super(config, f, cache);
 	}
-
-	protected DefaultSerializerProvider(SerializerProvider src, SerializationConfig config, SerializerFactory f) {
-		super(src, config, f);
-	}
-
-	public abstract DefaultSerializerProvider createInstance(SerializationConfig config, SerializerFactory jsf);
 
 	@Override
 	public MemorySerializer<?> serializerInstance(Annotated annotated, Object serDef) {
+		if (serDef == null) {
+			return null;
+		}
 		return (MemorySerializer<?>) ClassUtil.createInstance((Class<?>) serDef);
+	}
+
+	public void serializeValue(MemoryGenerator gen, Object value) throws IOException {
+		MemorySerializer<Object> serializer = findTypedValueSerializer(value.getClass(), true);
+		serializer.serialize(value, gen, this);
 	}
 
 	public static final class Impl extends DefaultSerializerProvider {
 
-		public Impl() {
-			super();
+		public Impl(SerializationConfig config, SerializerFactory f, SerializerCache cache) {
+			super(config, f, cache);
 		}
-
-		private Impl(SerializerProvider src, SerializationConfig config, SerializerFactory f) {
-			super(src, config, f);
-		}
-
-		@Override
-		public DefaultSerializerProvider createInstance(SerializationConfig config, SerializerFactory f) {
-			return new Impl(this, config, f);
-		}
-
 	}
 
 }

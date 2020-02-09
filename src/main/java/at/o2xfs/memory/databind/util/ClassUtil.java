@@ -119,6 +119,10 @@ public final class ClassUtil {
 		return result;
 	}
 
+	public static boolean isJDKClass(Class<?> rawType) {
+		return rawType.getName().startsWith("java.");
+	}
+
 	public static void throwAsIAE(Throwable t, String msg) {
 		throw new IllegalArgumentException(msg, t);
 	}

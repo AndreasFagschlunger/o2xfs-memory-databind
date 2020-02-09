@@ -12,4 +12,6 @@ import at.o2xfs.memory.databind.MemorySerializer;
 public @interface MemorySerialize {
 
 	public Class<? extends MemorySerializer> using() default MemorySerializer.None.class;
+
+	public Class<? extends MemorySerializer> nullsUsing() default MemorySerializer.None.class;
 }

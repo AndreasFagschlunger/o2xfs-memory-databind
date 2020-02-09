@@ -67,6 +67,10 @@ public abstract class JavaType {
 		return containedTypeCount() > 0;
 	}
 
+	public boolean isArrayType() {
+		return false;
+	}
+
 	public boolean isCollectionLikeType() {
 		return false;
 	}
@@ -83,6 +87,10 @@ public abstract class JavaType {
 
 	public final boolean isReferenceType() {
 		return getReferencedType() != null;
+	}
+
+	public final boolean isTypeOrSubTypeOf(Class<?> cls) {
+		return rawClass == cls || rawClass.isAssignableFrom(cls);
 	}
 
 	public abstract JavaType refine(Class<?> rawType, TypeBindings bindings, JavaType superClass,

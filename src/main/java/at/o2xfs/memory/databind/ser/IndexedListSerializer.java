@@ -5,65 +5,81 @@
  */
 package at.o2xfs.memory.databind.ser;
 
+import java.io.IOException;
 import java.util.List;
 
+import at.o2xfs.memory.core.MemoryGenerator;
 import at.o2xfs.memory.databind.BeanProperty;
-import at.o2xfs.memory.databind.MemoryGenerator;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializerProvider;
-import at.o2xfs.memory.databind.annotation.MemoryList;
+import at.o2xfs.memory.databind.annotation.NullTerminated;
 import at.o2xfs.memory.databind.introspect.AnnotatedMember;
-import at.o2xfs.memory.databind.ser.win32.ULongSerializer;
-import at.o2xfs.memory.databind.ser.win32.UShortSerializer;
+import at.o2xfs.memory.databind.ser.std.AsArraySerializerBase;
 import at.o2xfs.memory.databind.type.JavaType;
 
-public class IndexedListSerializer extends MemorySerializer<List<?>> implements ContextualSerializer {
+public class IndexedListSerializer extends AsArraySerializerBase<Object> {
 
-	private final JavaType elementType;
+	private final boolean nullTerminated;
 
-	private final int indexBytes;
-
-	public IndexedListSerializer(JavaType elementType) {
-		this(elementType, 0);
+	public IndexedListSerializer(JavaType elementType, MemorySerializer<?> valueSerializer) {
+		this(elementType, valueSerializer, false);
 	}
 
-	protected IndexedListSerializer(JavaType elementType, int indexBytes) {
-		this.elementType = elementType;
-		this.indexBytes = indexBytes;
+	private IndexedListSerializer(JavaType elementType, MemorySerializer<?> valueSerializer, boolean nullTerminated) {
+		super(List.class, elementType, valueSerializer);
+		this.nullTerminated = nullTerminated;
 	}
 
-	private void serializeSize(int size, MemoryGenerator gen, SerializerProvider provider) {
-		switch (indexBytes) {
-		case 2:
-			new UShortSerializer().serialize(Integer.valueOf(size), gen, provider);
-			break;
-		case 4:
-			new ULongSerializer().serialize(Long.valueOf(size), gen, provider);
-			break;
+	private void serializeContents(List<?> value, MemoryGenerator gen, SerializerProvider ctxt) throws IOException {
+		for (int i = 0; i < value.size(); i++) {
+			Object elem = value.get(i);
+			if (elem == null) {
+				gen.writeNull();
+			} else {
+				Class<?> cc = elem.getClass();
+				MemorySerializer<Object> serializer = dynamicValueSerializers.serializerFor(cc);
+				if (serializer == null) {
+					if (elementType.hasGenericTypes()) {
+						serializer = findAndAddDynamic(ctxt,
+								ctxt.constructSpecializedType(elementType, elem.getClass()));
+					} else {
+						serializer = findAndAddDynamic(ctxt, cc);
+					}
+				}
+				gen.startPointer();
+				serializer.serialize(elem, gen, ctxt);
+				gen.endPointer();
+			}
 		}
 	}
 
 	@Override
-	public MemorySerializer<?> createContextual(SerializerProvider prov, BeanProperty property) {
+	public MemorySerializer<?> createContextual(SerializerProvider ctxt, BeanProperty property) {
 		MemorySerializer<?> result = this;
 		AnnotatedMember member = property.getMember();
-		MemoryList nativeList = member.getAnnotation(MemoryList.class);
-		if (nativeList != null) {
-			if (nativeList.indexBytes() > 0) {
-				result = new IndexedListSerializer(elementType, nativeList.indexBytes());
-			}
+		NullTerminated nullTerminated = member.getAnnotation(NullTerminated.class);
+		if (nullTerminated != null) {
+			result = new IndexedListSerializer(elementType, elementSerializer, true);
 		}
 		return result;
 	}
 
 	@Override
-	public void serialize(List<?> value, MemoryGenerator gen, SerializerProvider provider) {
-		if (indexBytes > 0) {
-			serializeSize(value.size(), gen, provider);
+	public void serialize(Object aValue, MemoryGenerator gen, SerializerProvider ctxt) throws IOException {
+		List<?> value = (List<?>) aValue;
+		if (!nullTerminated) {
+			gen.writeUnsignedShort(value.size());
 		}
-		for (Object each : value) {
-			MemorySerializer<Object> serializer = provider.findValueSerializer(each.getClass(), null);
-			serializer.serialize(each, gen.writePointer(), provider);
+		if (value.isEmpty()) {
+			gen.writeNull();
+			return;
 		}
+		gen.startPointer();
+		serializeContents(value, gen, ctxt);
+		if (nullTerminated) {
+			gen.writeNull();
+		}
+
+		gen.endPointer();
 	}
 }

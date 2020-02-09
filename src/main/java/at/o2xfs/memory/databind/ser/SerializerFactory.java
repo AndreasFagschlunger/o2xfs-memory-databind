@@ -5,16 +5,15 @@
  */
 package at.o2xfs.memory.databind.ser;
 
-import at.o2xfs.memory.databind.SerializationConfig;
-import at.o2xfs.memory.databind.SerializerProvider;
+import at.o2xfs.memory.databind.BeanDescription;
 import at.o2xfs.memory.databind.MemorySerializer;
+import at.o2xfs.memory.databind.SerializerProvider;
 import at.o2xfs.memory.databind.type.JavaType;
 
 public abstract class SerializerFactory {
 
-	public abstract MemorySerializer<Object> createSerializer(SerializerProvider provider, JavaType type);
-
-	public abstract MemorySerializer<Object> createTypeSerializer(SerializationConfig config, JavaType baseType);
+	public abstract MemorySerializer<Object> createSerializer(SerializerProvider ctxt, JavaType baseType,
+			BeanDescription beanDesc);
 
 	public abstract SerializerFactory withAdditionalSerializers(Serializers s);
 }

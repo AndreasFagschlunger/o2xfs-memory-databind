@@ -32,13 +32,13 @@ public class MethodProperty extends SettableBeanProperty {
 
 	@Override
 	public Object deserializeSetAndReturn(ReadableMemory memory, DeserializationContext ctxt, Object instance) {
-		Object result = valueDeserializer.deserialize(memory, ctxt);
+		Object value = valueDeserializer.deserialize(memory, ctxt);
 		try {
-			annotated.getMethod().invoke(instance, result);
+			annotated.getMethod().invoke(instance, value);
 		} catch (Exception e) {
-			throwAsIOE(e, result);
+			throwAsIOE(e, value);
 		}
-		return result;
+		return value;
 	}
 
 	@Override

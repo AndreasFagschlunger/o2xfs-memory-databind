@@ -35,8 +35,9 @@ public class BuilderBasedDeserializer extends BeanDeserializerBase {
 	private final Object vanillaDeserialize(ReadableMemory memory, DeserializationContext ctxt) {
 		Object result = valueInstantiator.createUsingDefault(ctxt);
 		for (SettableBeanProperty prop : beanProperties) {
+			System.out.println("prop=" + prop);
 			if (prop.getMember().getAnnotation(Pointer.class) != null) {
-				prop.deserializeSetAndReturn(memory.dereference(), ctxt, result);
+				prop.deserializeSetAndReturn(memory.nextReference(), ctxt, result);
 			} else {
 				prop.deserializeSetAndReturn(memory, ctxt, result);
 			}

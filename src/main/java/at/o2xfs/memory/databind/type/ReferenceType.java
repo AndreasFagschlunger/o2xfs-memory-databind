@@ -9,6 +9,12 @@ public class ReferenceType extends SimpleType {
 
 	private JavaType referencedType;
 
+	protected ReferenceType(Class<?> cls, TypeBindings bindings, JavaType superClass, JavaType[] superInts,
+			JavaType refType) {
+		super(cls, bindings, superClass, superInts);
+		referencedType = refType;
+	}
+
 	protected ReferenceType(TypeBase base, JavaType referencedType) {
 		super(base);
 		this.referencedType = referencedType;
@@ -26,5 +32,10 @@ public class ReferenceType extends SimpleType {
 
 	public static ReferenceType upgradeFrom(JavaType baseType, JavaType referencedType) {
 		return new ReferenceType((TypeBase) baseType, referencedType);
+	}
+
+	public static JavaType construct(Class<?> cls, TypeBindings bindings, JavaType superClass, JavaType[] superInts,
+			JavaType refType) {
+		return new ReferenceType(cls, bindings, superClass, superInts, refType);
 	}
 }

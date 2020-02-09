@@ -14,7 +14,7 @@ import at.o2xfs.memory.databind.deser.impl.BeanPropertyMap;
 import at.o2xfs.memory.databind.deser.std.StdDeserializer;
 import at.o2xfs.memory.databind.type.JavaType;
 
-public abstract class BeanDeserializerBase extends StdDeserializer<Object> implements ResolvableDeserializer {
+public abstract class BeanDeserializerBase extends StdDeserializer<Object> {
 
 	protected final JavaType beanType;
 	protected final ValueInstantiator valueInstantiator;

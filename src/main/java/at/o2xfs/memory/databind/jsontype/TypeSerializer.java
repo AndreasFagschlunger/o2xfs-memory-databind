@@ -3,13 +3,13 @@
  * Copyright (c) 2007- Tatu Saloranta, tatu.saloranta@iki.fi
  * Modifications Copyright (c) 2019 Andreas Fagschlunger
  */
-package at.o2xfs.memory.databind.ser;
+package at.o2xfs.memory.databind.jsontype;
 
 import at.o2xfs.memory.databind.BeanProperty;
-import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializerProvider;
 
-public interface ContextualSerializer {
+public abstract class TypeSerializer {
 
-	MemorySerializer<?> createContextual(SerializerProvider prov, BeanProperty property);
+	public abstract TypeSerializer forProperty(SerializerProvider ctxt, BeanProperty prop);
+
 }
