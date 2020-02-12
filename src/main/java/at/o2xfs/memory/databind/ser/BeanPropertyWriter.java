@@ -87,16 +87,22 @@ public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
 				ser = findAndAddDynamic(m, cls, prov);
 			}
 		}
-		boolean reference = member.getAnnotation(Pointer.class) != null;
-		if (reference) {
+		Pointer pointer = member.getAnnotation(Pointer.class);
+		if (pointer != null) {
 			gen.startPointer();
+			if (pointer.pointerToPointer()) {
+				gen.startPointer();
+			}
 		}
 		if (typeSerializer == null) {
 			ser.serialize(value, gen, prov);
 		} else {
 			ser.serializeWithType(value, gen, prov, typeSerializer);
 		}
-		if (reference) {
+		if (pointer != null) {
+			if (pointer.pointerToPointer()) {
+				gen.endPointer();
+			}
 			gen.endPointer();
 		}
 	}
