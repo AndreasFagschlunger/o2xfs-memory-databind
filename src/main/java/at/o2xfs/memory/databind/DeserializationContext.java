@@ -93,6 +93,14 @@ public abstract class DeserializationContext extends DatabindContext {
 		return deser;
 	}
 
+	public MemoryDeserializer<?> handleSecondaryContextualization(MemoryDeserializer<?> deser, BeanProperty prop,
+			JavaType type) {
+		if (deser != null) {
+			deser = deser.createContextual(this, prop);
+		}
+		return deser;
+	}
+
 	@Override
 	public BeanDescription introspectBeanDescription(JavaType type) {
 		return classIntrospector().introspectForDeserialization(type);

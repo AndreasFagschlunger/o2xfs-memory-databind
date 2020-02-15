@@ -11,6 +11,11 @@ public abstract class ContainerDeserializerBase<T> extends StdDeserializer<T> {
 
 	protected final JavaType containerType;
 
+	protected ContainerDeserializerBase(ContainerDeserializerBase<?> base) {
+		super(base.containerType);
+		containerType = base.containerType;
+	}
+
 	public ContainerDeserializerBase(JavaType valueType) {
 		super(valueType);
 		containerType = valueType;

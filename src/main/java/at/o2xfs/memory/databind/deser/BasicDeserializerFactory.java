@@ -20,11 +20,13 @@ import at.o2xfs.memory.databind.deser.std.CollectionDeserializer;
 import at.o2xfs.memory.databind.deser.std.EnumDeserializer;
 import at.o2xfs.memory.databind.deser.std.MapDeserializer;
 import at.o2xfs.memory.databind.deser.std.NumberDeserializers;
+import at.o2xfs.memory.databind.deser.std.ObjectArrayDeserializer;
 import at.o2xfs.memory.databind.deser.std.StringDeserializer;
 import at.o2xfs.memory.databind.ext.jdk8.Jdk8OptionalDeserializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.introspect.AnnotatedConstructor;
 import at.o2xfs.memory.databind.introspect.AnnotatedMember;
+import at.o2xfs.memory.databind.type.ArrayType;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.MapType;
@@ -78,6 +80,12 @@ public abstract class BasicDeserializerFactory extends DeserializerFactory {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public MemoryDeserializer<?> createArrayDeserializer(DeserializationContext ctxt, ArrayType type,
+			BeanDescription beanDesc) {
+		return new ObjectArrayDeserializer(type, null);
 	}
 
 	@Override

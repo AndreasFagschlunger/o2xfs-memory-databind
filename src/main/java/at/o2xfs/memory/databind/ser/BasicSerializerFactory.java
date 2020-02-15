@@ -26,8 +26,10 @@ import at.o2xfs.memory.databind.ser.std.EnumSetSerializer;
 import at.o2xfs.memory.databind.ser.std.MapSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializers;
+import at.o2xfs.memory.databind.ser.std.ObjectArraySerializer;
 import at.o2xfs.memory.databind.ser.std.ReferenceTypeSerializer;
 import at.o2xfs.memory.databind.ser.std.StringSerializer;
+import at.o2xfs.memory.databind.type.ArrayType;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.ReferenceType;
@@ -49,6 +51,11 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 	protected BasicSerializerFactory(SerializerFactoryConfig factoryConfig) {
 		this.factoryConfig = factoryConfig != null ? factoryConfig
 				: new SerializerFactoryConfig(Collections.emptySet());
+	}
+
+	private MemorySerializer<?> buildArraySerializer(SerializerProvider ctxt, ArrayType type,
+			BeanDescription beanDesc) {
+		return new ObjectArraySerializer(type.getContentType(), null);
 	}
 
 	private MemorySerializer<?> buildCollectionSerializer(CollectionType type) {
@@ -76,6 +83,8 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 		}
 		if (type.isCollectionLikeType()) {
 			result = buildCollectionSerializer((CollectionType) type);
+		} else if (type.isArrayType()) {
+			result = buildArraySerializer(prov, (ArrayType) type, beanDesc);
 		}
 		return result;
 	}
