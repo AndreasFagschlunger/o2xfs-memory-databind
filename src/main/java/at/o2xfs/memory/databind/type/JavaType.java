@@ -85,6 +85,10 @@ public abstract class JavaType {
 
 	public abstract boolean isContainerType();
 
+	public final boolean isPrimitive() {
+		return rawClass.isPrimitive();
+	}
+
 	public final boolean isReferenceType() {
 		return getReferencedType() != null;
 	}

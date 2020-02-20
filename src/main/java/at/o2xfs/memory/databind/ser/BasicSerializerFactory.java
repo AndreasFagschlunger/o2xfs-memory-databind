@@ -21,13 +21,16 @@ import at.o2xfs.memory.databind.ext.jdk8.Jdk8OptionalSerializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.jsontype.TypeSerializer;
 import at.o2xfs.memory.databind.ser.std.BooleanSerializer;
+import at.o2xfs.memory.databind.ser.std.CollectionSerializer;
 import at.o2xfs.memory.databind.ser.std.EnumSerializer;
 import at.o2xfs.memory.databind.ser.std.EnumSetSerializer;
 import at.o2xfs.memory.databind.ser.std.MapSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializers;
 import at.o2xfs.memory.databind.ser.std.ReferenceTypeSerializer;
+import at.o2xfs.memory.databind.ser.std.StdArraySerializers;
 import at.o2xfs.memory.databind.ser.std.StringSerializer;
+import at.o2xfs.memory.databind.type.ArrayType;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.ReferenceType;
@@ -51,6 +54,10 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 				: new SerializerFactoryConfig(Collections.emptySet());
 	}
 
+	private MemorySerializer<?> buildArraySerializer(ArrayType type) {
+		return StdArraySerializers.findStandardImpl(type.getRawClass());
+	}
+
 	private MemorySerializer<?> buildCollectionSerializer(CollectionType type) {
 		MemorySerializer<?> result = null;
 		Class<?> raw = type.getRawClass();
@@ -60,13 +67,15 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 			if (isIndexedList(raw)) {
 				result = new IndexedListSerializer(type.getContentType(), null);
 			}
+			if (result == null) {
+				result = buildCollectionSerializer(type.getContentType());
+			}
 		}
 		return result;
 	}
 
 	protected MemorySerializer<?> buildContainerSerializer(SerializerProvider prov, JavaType type,
 			BeanDescription beanDesc) {
-		MemorySerializer<?> result = null;
 		JavaType elementType = type.getContentType();
 		Class<?> raw = type.getRawClass();
 		if (type.isMapLikeType()) {
@@ -75,9 +84,12 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 			}
 		}
 		if (type.isCollectionLikeType()) {
-			result = buildCollectionSerializer((CollectionType) type);
+			return buildCollectionSerializer((CollectionType) type);
 		}
-		return result;
+		if (type.isArrayType()) {
+			return buildArraySerializer((ArrayType) type);
+		}
+		return null;
 	}
 
 	private MemorySerializer<?> buildEnumSerializer(JavaType type) {
@@ -105,6 +117,10 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 		Class<?> raw = type.getRawClass();
 		String clsName = raw.getName();
 		return concrete.get(clsName);
+	}
+
+	public ContainerSerializer<?> buildCollectionSerializer(JavaType elemType) {
+		return new CollectionSerializer(elemType, null);
 	}
 
 	public abstract Iterable<Serializers> customSerializers();

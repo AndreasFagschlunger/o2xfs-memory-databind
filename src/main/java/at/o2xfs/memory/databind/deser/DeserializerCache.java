@@ -13,6 +13,7 @@ import at.o2xfs.memory.databind.DeserializationConfig;
 import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
+import at.o2xfs.memory.databind.type.ArrayType;
 import at.o2xfs.memory.databind.type.CollectionLikeType;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
@@ -67,6 +68,9 @@ public class DeserializerCache {
 			return factory.createEnumDeserializer(ctxt, type, beanDesc);
 		}
 		if (type.isContainerType()) {
+			if (type.isArrayType()) {
+				return factory.createArrayDeserializer(ctxt, (ArrayType) type, beanDesc);
+			}
 			if (type.isMapLikeType()) {
 				MapLikeType mlt = (MapLikeType) type;
 				if (mlt.isTrueMapType()) {
