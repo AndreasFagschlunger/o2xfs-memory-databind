@@ -19,6 +19,11 @@ public final class ArrayType extends TypeBase {
 	}
 
 	@Override
+	public JavaType getContentType() {
+		return componentType;
+	}
+
+	@Override
 	public StringBuilder getGenericSignature(StringBuilder sb) {
 		sb.append('[');
 		componentType.getGenericSignature(sb);

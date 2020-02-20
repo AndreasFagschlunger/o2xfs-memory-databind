@@ -8,12 +8,16 @@ package at.o2xfs.memory.databind.deser;
 import at.o2xfs.memory.databind.BeanDescription;
 import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
+import at.o2xfs.memory.databind.type.ArrayType;
 import at.o2xfs.memory.databind.type.CollectionType;
 import at.o2xfs.memory.databind.type.JavaType;
 import at.o2xfs.memory.databind.type.MapType;
 import at.o2xfs.memory.databind.type.ReferenceType;
 
 public abstract class DeserializerFactory {
+
+	public abstract MemoryDeserializer<?> createArrayDeserializer(DeserializationContext ctxt, ArrayType type,
+			BeanDescription beanDesc);
 
 	public abstract MemoryDeserializer<?> createBeanDeserializer(DeserializationContext ctxt, JavaType type,
 			BeanDescription beanDesc);
