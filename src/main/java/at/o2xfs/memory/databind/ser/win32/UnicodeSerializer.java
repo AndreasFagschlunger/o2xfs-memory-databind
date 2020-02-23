@@ -18,7 +18,7 @@ public class UnicodeSerializer extends StdSerializer<String> {
 	@Override
 	public void serialize(String value, MemoryGenerator gen, SerializerProvider provider) throws IOException {
 		gen.startPointer();
-		gen.write(value.getBytes(StandardCharsets.UTF_16));
+		gen.write(value.getBytes(StandardCharsets.UTF_16LE));
 		gen.write(NUL);
 		gen.endPointer();
 	}

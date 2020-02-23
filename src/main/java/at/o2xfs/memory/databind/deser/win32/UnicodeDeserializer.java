@@ -24,7 +24,7 @@ public class UnicodeDeserializer extends StdDeserializer<String> {
 			byte[] b = next.read(2);
 			buffer.append(b);
 		} while (buffer.byteAt(buffer.length() - 2) != 0 || buffer.byteAt(buffer.length() - 1) != 0);
-		return new String(buffer.buffer(), 0, buffer.length() - 2, StandardCharsets.UTF_16);
+		return new String(buffer.buffer(), 0, buffer.length() - 2, StandardCharsets.UTF_16LE);
 	}
 
 }
