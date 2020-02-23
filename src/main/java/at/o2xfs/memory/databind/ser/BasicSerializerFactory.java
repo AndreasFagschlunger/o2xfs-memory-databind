@@ -27,6 +27,7 @@ import at.o2xfs.memory.databind.ser.std.EnumSetSerializer;
 import at.o2xfs.memory.databind.ser.std.MapSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializer;
 import at.o2xfs.memory.databind.ser.std.NumberSerializers;
+import at.o2xfs.memory.databind.ser.std.OptionalStringSerializer;
 import at.o2xfs.memory.databind.ser.std.ReferenceTypeSerializer;
 import at.o2xfs.memory.databind.ser.std.StdArraySerializers;
 import at.o2xfs.memory.databind.ser.std.StringSerializer;
@@ -104,6 +105,9 @@ public abstract class BasicSerializerFactory extends SerializerFactory {
 			ReferenceType refType, BeanDescription beanDesc) {
 		ReferenceTypeSerializer<?> ser = null;
 		if (baseType == Optional.class) {
+			if (String.class == refType.getReferencedType().getRawClass()) {
+				return new OptionalStringSerializer();
+			}
 			ser = new Jdk8OptionalSerializer(refType);
 		}
 		return ser;
