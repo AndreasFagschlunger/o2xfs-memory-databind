@@ -22,6 +22,7 @@ import at.o2xfs.memory.databind.deser.std.MapDeserializer;
 import at.o2xfs.memory.databind.deser.std.NumberDeserializers;
 import at.o2xfs.memory.databind.deser.std.PrimitiveArrayDeserializers;
 import at.o2xfs.memory.databind.deser.std.StringDeserializer;
+import at.o2xfs.memory.databind.deser.win32.OptionalStringDeserializer;
 import at.o2xfs.memory.databind.ext.jdk8.Jdk8OptionalDeserializer;
 import at.o2xfs.memory.databind.introspect.Annotated;
 import at.o2xfs.memory.databind.introspect.AnnotatedConstructor;
@@ -156,6 +157,9 @@ public abstract class BasicDeserializerFactory extends DeserializerFactory {
 		MemoryDeserializer<?> deser = findCustomReferenceDeserializer(type, ctxt.getConfig(), beanDesc);
 		if (deser == null) {
 			if (type.isTypeOrSubTypeOf(Optional.class)) {
+				if (CLASS_STRING == type.getReferencedType().getRawClass()) {
+					return new OptionalStringDeserializer();
+				}
 				return new Jdk8OptionalDeserializer(type, contentTypeDeser);
 			}
 		}
