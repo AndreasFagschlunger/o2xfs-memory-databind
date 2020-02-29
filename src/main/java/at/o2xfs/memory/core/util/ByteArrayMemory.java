@@ -1,16 +1,14 @@
 package at.o2xfs.memory.core.util;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import at.o2xfs.common.Bits;
-import at.o2xfs.common.ByteArrayBuffer;
 import at.o2xfs.common.Hex;
-import at.o2xfs.memory.databind.ReadableMemory;
+import at.o2xfs.memory.core.Address;
+import at.o2xfs.memory.core.BaseReadableMemory;
 
-public final class ByteArrayMemory implements ReadableMemory {
+public final class ByteArrayMemory extends BaseReadableMemory {
 
 	private final ByteArrayMemorySystem memorySystem;
 	private final Address address;
@@ -34,25 +32,6 @@ public final class ByteArrayMemory implements ReadableMemory {
 		offset += length;
 		System.out.println(">> " + address + " " + Hex.encode(result));
 		return result;
-	}
-
-	@Override
-	public String nextString() {
-		ByteArrayBuffer buffer = new ByteArrayBuffer(32);
-		do {
-			buffer.append(read(1));
-		} while (buffer.byteAt(buffer.length() - 1) != 0);
-		return new String(buffer.buffer(), 0, buffer.length() - 1, StandardCharsets.US_ASCII);
-	}
-
-	@Override
-	public long nextUnsignedLong() {
-		return Bits.getInt(read(Integer.BYTES)) & 0xffffffff;
-	}
-
-	@Override
-	public int nextUnsignedShort() {
-		return Bits.getShort(read(Short.BYTES)) & 0xffff;
 	}
 
 	@Override

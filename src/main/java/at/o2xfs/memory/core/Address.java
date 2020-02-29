@@ -1,10 +1,8 @@
-package at.o2xfs.memory.core.util;
+package at.o2xfs.memory.core;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import at.o2xfs.common.Bytes;
 
 public final class Address {
 
@@ -14,11 +12,11 @@ public final class Address {
 		if (value.length == 0) {
 			throw new IllegalArgumentException("value must not be empty");
 		}
-		this.value = Bytes.copy(value);
+		this.value = value.clone();
 	}
 
 	public byte[] getValue() {
-		return value;
+		return value.clone();
 	}
 
 	@Override

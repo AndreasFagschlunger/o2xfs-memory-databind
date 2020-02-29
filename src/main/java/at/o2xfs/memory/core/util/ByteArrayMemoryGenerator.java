@@ -6,6 +6,7 @@ import java.util.List;
 
 import at.o2xfs.common.Bits;
 import at.o2xfs.common.ByteArrayBuffer;
+import at.o2xfs.memory.core.Address;
 
 public class ByteArrayMemoryGenerator extends BaseMemoryGenerator {
 
