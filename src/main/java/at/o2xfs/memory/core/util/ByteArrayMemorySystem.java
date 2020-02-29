@@ -5,6 +5,7 @@ import java.util.Map;
 
 import at.o2xfs.common.Bits;
 import at.o2xfs.common.Hex;
+import at.o2xfs.memory.core.Address;
 
 public class ByteArrayMemorySystem {
 
