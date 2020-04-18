@@ -49,9 +49,7 @@ Systemtime actual = mapper.read(memorySystem.dereference(lpSystemtime), Systemti
 System.out.println("Actual: " + actual);
 ```
 
-<aside class="warning">
-Currently [Alignment](https://docs.microsoft.com/en-us/cpp/cpp/alignment-cpp-declarations?view=vs-2019) is not supported, header files (*.h) should add the line `#pragma pack(push,1)` on top to disable alignment.
-</aside>
+> Currently [Alignment](https://docs.microsoft.com/en-us/cpp/cpp/alignment-cpp-declarations?view=vs-2019) is not supported, header files (*.h) should add the line `#pragma pack(push,1)` on top to disable alignment.
 
 ## Code Status
 
