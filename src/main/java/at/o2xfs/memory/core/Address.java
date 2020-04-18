@@ -4,18 +4,23 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public final class Address {
+import at.o2xfs.common.Hex;
+import at.o2xfs.memory.databind.annotation.MemoryDeserialize;
+import at.o2xfs.memory.databind.annotation.MemorySerialize;
+import at.o2xfs.memory.databind.deser.win32.AddressDeserializer;
+import at.o2xfs.memory.databind.ser.win32.AddressSerializer;
+
+@MemorySerialize(using = AddressSerializer.class)
+@MemoryDeserialize(using = AddressDeserializer.class)
+public class Address {
 
 	private final byte[] value;
 
-	private Address(byte[] value) {
-		if (value.length == 0) {
-			throw new IllegalArgumentException("value must not be empty");
-		}
+	protected Address(byte[] value) {
 		this.value = value.clone();
 	}
 
-	public byte[] getValue() {
+	public final byte[] getValue() {
 		return value.clone();
 	}
 
@@ -35,10 +40,10 @@ public final class Address {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("value", value).toString();
+		return new ToStringBuilder(this).append("value", Hex.encode(value)).toString();
 	}
 
-	public static final Address build(byte[] value) {
+	public static Address build(byte[] value) {
 		return new Address(value);
 	}
 }

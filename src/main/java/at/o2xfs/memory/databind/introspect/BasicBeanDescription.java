@@ -51,8 +51,8 @@ public class BasicBeanDescription extends BeanDescription {
 	}
 
 	@Override
-	public AnnotatedMethod findMethod(String name) {
-		return classInfo.findMethod(name);
+	public AnnotatedMethod findMethod(String name, Class<?>[] parameterTypes) {
+		return classInfo.findMethod(name, parameterTypes);
 	}
 
 	@Override

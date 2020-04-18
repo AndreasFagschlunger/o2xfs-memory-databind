@@ -35,7 +35,7 @@ public final class AnnotatedClassResolver {
 		for (JavaType each : superTypes) {
 			Annotation[] annotations = ClassUtil.findClassAnnotations(each.getRawClass());
 			for (Annotation a : annotations) {
-				result.put(a.annotationType(), a);
+				result.putIfAbsent(a.annotationType(), a);
 			}
 		}
 		return result;

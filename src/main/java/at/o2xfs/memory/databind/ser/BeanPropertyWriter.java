@@ -8,6 +8,9 @@ package at.o2xfs.memory.databind.ser;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import at.o2xfs.memory.core.MemoryGenerator;
 import at.o2xfs.memory.databind.MemorySerializer;
 import at.o2xfs.memory.databind.SerializerProvider;
@@ -22,6 +25,8 @@ import at.o2xfs.memory.databind.ser.impl.PropertySerializerMap;
 import at.o2xfs.memory.databind.type.JavaType;
 
 public class BeanPropertyWriter extends ConcreteBeanPropertyBase {
+
+	private static final Logger LOG = LogManager.getLogger(BeanPropertyWriter.class);
 
 	private final String name;
 	private final JavaType declaredType;

@@ -24,7 +24,7 @@ public abstract class BeanDescription {
 
 	public abstract AnnotatedConstructor findDefaultConstructor();
 
-	public abstract AnnotatedMethod findMethod(String defaultBuildMethod);
+	public abstract AnnotatedMethod findMethod(String name, Class<?>[] parameterTypes);
 
 	public abstract Class<?> findPOJOBuilder();
 

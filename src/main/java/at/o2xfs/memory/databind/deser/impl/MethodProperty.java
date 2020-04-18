@@ -7,6 +7,9 @@ package at.o2xfs.memory.databind.deser.impl;
 
 import java.util.Objects;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
 import at.o2xfs.memory.databind.ReadableMemory;
@@ -17,6 +20,8 @@ import at.o2xfs.memory.databind.introspect.BeanPropertyDefinition;
 import at.o2xfs.memory.databind.type.JavaType;
 
 public class MethodProperty extends SettableBeanProperty {
+
+	private static final Logger LOG = LogManager.getLogger(MethodProperty.class);
 
 	private final AnnotatedMethod annotated;
 
@@ -32,7 +37,9 @@ public class MethodProperty extends SettableBeanProperty {
 
 	@Override
 	public Object deserializeSetAndReturn(ReadableMemory memory, DeserializationContext ctxt, Object instance) {
+		LOG.debug("deserializeSetAndReturn: annotated={},valueDeserializer={}", annotated, valueDeserializer);
 		Object value = valueDeserializer.deserialize(memory, ctxt);
+		LOG.debug("deserializeSetAndReturn: value={}", value);
 		try {
 			annotated.getMethod().invoke(instance, value);
 		} catch (Exception e) {

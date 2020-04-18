@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import at.o2xfs.memory.databind.AnnotationIntrospector;
 import at.o2xfs.memory.databind.PropertyName;
 import at.o2xfs.memory.databind.cfg.MapperConfig;
 import at.o2xfs.memory.databind.type.JavaType;
@@ -18,17 +22,22 @@ import at.o2xfs.memory.databind.util.BeanUtil;
 
 public class POJOPropertiesCollector {
 
-	private final MapperConfig config;
+	private static final Logger LOG = LogManager.getLogger(POJOPropertiesCollector.class);
+
+	private final MapperConfig<?> config;
 	private final JavaType type;
 	private final AnnotatedClass classDef;
+	private final AnnotationIntrospector annotationIntrospector;
 	private final String mutatorPrefix;
 	private Map<String, POJOPropertyBuilder> properties;
 
-	public POJOPropertiesCollector(MapperConfig config, JavaType type, AnnotatedClass classDef, String mutatorPrefix) {
+	public POJOPropertiesCollector(MapperConfig<?> config, JavaType type, AnnotatedClass classDef,
+			String mutatorPrefix) {
 		this.config = Objects.requireNonNull(config);
 		this.type = type;
 		this.classDef = classDef;
 		this.mutatorPrefix = Objects.requireNonNull(mutatorPrefix);
+		annotationIntrospector = config.getAnnotationIntrospector();
 	}
 
 	private void collectAll() {
@@ -38,6 +47,7 @@ public class POJOPropertiesCollector {
 		for (POJOPropertyBuilder each : properties.values()) {
 			each.mergeAnnotations();
 		}
+		sortProperties(properties);
 	}
 
 	private void addGetterMethod(Map<String, POJOPropertyBuilder> props, AnnotatedMethod m) {
@@ -68,7 +78,20 @@ public class POJOPropertiesCollector {
 		return result;
 	}
 
-	public MapperConfig getConfig() {
+	private void sortProperties(Map<String, POJOPropertyBuilder> props) {
+		List<String> propertyOrder = annotationIntrospector.findSerializationPropertyOrder(config, classDef);
+		if (propertyOrder.isEmpty()) {
+			return;
+		}
+		Map<String, POJOPropertyBuilder> ordered = new LinkedHashMap<>(propertyOrder.size());
+		for (String each : propertyOrder) {
+			ordered.put(each, props.remove(each));
+		}
+		props.clear();
+		props.putAll(ordered);
+	}
+
+	public MapperConfig<?> getConfig() {
 		return config;
 	}
 
@@ -89,12 +112,14 @@ public class POJOPropertiesCollector {
 
 	private void addFields(Map<String, POJOPropertyBuilder> props) {
 		for (AnnotatedField field : classDef.fields()) {
+			LOG.debug("addFields: {}", field);
 			property(props, field.getName()).setField(field);
 		}
 	}
 
 	private void addMethods(Map<String, POJOPropertyBuilder> props) {
 		for (AnnotatedMethod method : classDef.memberMethods()) {
+			LOG.debug("addMethods: {}", method);
 			int parameterCount = method.getParameterCount();
 			if (parameterCount == 0) {
 				addGetterMethod(props, method);

@@ -5,7 +5,7 @@
  */
 package at.o2xfs.memory.databind.introspect;
 
-import java.util.Objects;
+import java.lang.reflect.Method;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -14,9 +14,15 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public final class MemberKey {
 
 	private final String name;
+	private final Class<?>[] parameterTypes;
 
-	public MemberKey(String name) {
-		this.name = Objects.requireNonNull(name);
+	public MemberKey(Method m) {
+		this(m.getName(), m.getParameterTypes());
+	}
+
+	public MemberKey(String name, Class<?>[] parameterTypes) {
+		this.name = name;
+		this.parameterTypes = parameterTypes;
 	}
 
 	@Override
@@ -24,7 +30,10 @@ public final class MemberKey {
 		boolean result = false;
 		if (obj instanceof MemberKey) {
 			MemberKey memberKey = (MemberKey) obj;
-			result = new EqualsBuilder().append(name, memberKey.name).isEquals();
+			result = new EqualsBuilder()
+					.append(name, memberKey.name)
+					.append(parameterTypes, memberKey.parameterTypes)
+					.isEquals();
 		}
 		return result;
 
@@ -32,11 +41,11 @@ public final class MemberKey {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(name).toHashCode();
+		return new HashCodeBuilder().append(name).append(parameterTypes).toHashCode();
 	}
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("name", name).toString();
+		return new ToStringBuilder(this).append("name", name).append("parameterTypes", parameterTypes).toString();
 	}
 }
