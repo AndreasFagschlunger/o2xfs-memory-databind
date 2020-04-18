@@ -5,8 +5,6 @@
  */
 package at.o2xfs.memory.databind.deser;
 
-import java.util.List;
-
 import at.o2xfs.memory.databind.BeanDescription;
 import at.o2xfs.memory.databind.DeserializationContext;
 import at.o2xfs.memory.databind.MemoryDeserializer;
@@ -29,20 +27,18 @@ public class BeanDeserializerFactory extends BasicDeserializerFactory {
 
 	private void addBeanProps(DeserializationContext ctxt, BeanDescription beanDesc, BeanDescription builderDesc,
 			BeanDeserializerBuilder builder) {
-		List<BeanPropertyDefinition> propDefs = builderDesc.findProperties();
-		for (BeanPropertyDefinition propDef : propDefs) {
+		for (BeanPropertyDefinition beanPropDef : beanDesc.findProperties()) {
 			SettableBeanProperty prop = null;
-			BeanPropertyDefinition beanPropDef = null;
-			for (BeanPropertyDefinition each : beanDesc.findProperties()) {
-				if (propDef.getName().equals(each.getName())) {
-					beanPropDef = each;
+			BeanPropertyDefinition propDef = null;
+			for (BeanPropertyDefinition each : builderDesc.findProperties()) {
+				if (beanPropDef.getName().equals(each.getName())) {
+					propDef = each;
 					break;
 				}
 			}
-			if (beanPropDef == null) {
+			if (propDef == null) {
 				continue;
 			}
-
 			if (propDef.hasSetter()) {
 				JavaType propertyType = propDef.getSetter().getParameterType(0);
 				prop = constructSettableProperty(ctxt, beanPropDef, propDef, propertyType);
@@ -79,7 +75,7 @@ public class BeanDeserializerFactory extends BasicDeserializerFactory {
 		builder.setValueInstantiator(valueInstantiator);
 		addBeanProps(ctxt, beanDesc, builderDesc, builder);
 
-		AnnotatedMethod buildMethod = builderDesc.findMethod(DEFAULT_BUILD_METHOD);
+		AnnotatedMethod buildMethod = builderDesc.findMethod(DEFAULT_BUILD_METHOD, new Class<?>[0]);
 		builder.setPOJOBuilder(buildMethod);
 		return (MemoryDeserializer<Object>) builder.buildBuilderBased();
 	}

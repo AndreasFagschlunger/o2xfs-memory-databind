@@ -80,8 +80,8 @@ public class AnnotatedClass extends Annotated implements TypeResolutionContext {
 		return fields;
 	}
 
-	public AnnotatedMethod findMethod(String name) {
-		return methods().find(name);
+	public AnnotatedMethod findMethod(String name, Class<?>[] parameterTypes) {
+		return methods().find(name, parameterTypes);
 	}
 
 	public AnnotatedConstructor getDefaultConstructor() {

@@ -44,7 +44,7 @@ public class AnnotatedMethodCollector extends CollectorBase {
 			if (!isIncludableMemberMethod(each)) {
 				continue;
 			}
-			MemberKey key = new MemberKey(each.getName());
+			MemberKey key = new MemberKey(each);
 			MethodBuilder builder = methods.get(key);
 			if (builder == null) {
 				methods.put(key, new MethodBuilder(tc, each, collectAnnotations(each.getAnnotations())));

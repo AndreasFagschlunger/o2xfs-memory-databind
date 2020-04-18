@@ -30,13 +30,17 @@ public final class ByteArrayMemory extends BaseReadableMemory {
 		byte[] result = new byte[length];
 		System.arraycopy(value, offset, result, 0, result.length);
 		offset += length;
-		System.out.println(">> " + address + " " + Hex.encode(result));
 		return result;
 	}
 
 	@Override
+	public Address nextAddress() {
+		return Address.build(read(address.getValue().length));
+	}
+
+	@Override
 	public ByteArrayMemory nextReference() {
-		return memorySystem.dereference(Address.build(read(address.getValue().length)));
+		return memorySystem.dereference(nextAddress());
 	}
 
 	@Override

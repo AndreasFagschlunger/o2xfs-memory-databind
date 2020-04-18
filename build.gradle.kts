@@ -31,8 +31,8 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_13
+    targetCompatibility = JavaVersion.VERSION_13
     withJavadocJar()
     withSourcesJar()
 }
@@ -55,8 +55,10 @@ repositories {
 dependencies {
     api("at.o2xfs:o2xfs-common:1.0-SNAPSHOT")
     implementation("org.apache.commons:commons-lang3:3.9")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+    implementation("org.apache.logging.log4j:log4j-api:2.13.1")
+    runtimeOnly("org.apache.logging.log4j:log4j-core:2.13.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 }
 
 tasks.named<Test>("test") {

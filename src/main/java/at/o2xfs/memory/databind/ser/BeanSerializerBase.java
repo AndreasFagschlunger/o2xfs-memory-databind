@@ -25,7 +25,7 @@ public abstract class BeanSerializerBase extends MemorySerializer<Object> {
 			try {
 				property.serializeAsField(obj, gen, prov);
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new RuntimeException("Error serializing Field: property=" + property + ",obj=" + obj, e);
 			}
 		}
 	}

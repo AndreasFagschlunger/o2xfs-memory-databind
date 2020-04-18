@@ -17,8 +17,8 @@ public class AnnotatedMethodMap implements Iterable<AnnotatedMethod> {
 		this.methods = Objects.requireNonNull(methods);
 	}
 
-	public AnnotatedMethod find(String name) {
-		return methods.get(new MemberKey(name));
+	public AnnotatedMethod find(String name, Class<?>[] parameterTypes) {
+		return methods.get(new MemberKey(name, parameterTypes));
 	}
 
 	@Override
